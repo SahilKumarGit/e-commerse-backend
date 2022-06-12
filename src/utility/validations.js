@@ -1,3 +1,5 @@
+const mongoose = require("mongoose")
+
 const emptyString = (val) => {
     if (!val) return true
     if (!val.trim()) return true
@@ -28,9 +30,21 @@ let invalidPassword = function (password) {
     return !passwordRegex.test(password)
 }
 
+let invalidPhone = function (number) {
+    let phoneRegex = /^[6-9]\d{9}$/;
+    return !phoneRegex.test(number);
+}
+
+const invalidPincode = function (value) {
+    let pinRegex = /^[1-9]{1}[0-9]{5}$/;
+    return !pinRegex.test(value);
+}
+
+let invalidObjectId = function (ObjectId) {
+    return !mongoose.isValidObjectId(ObjectId)
+}
 
 
 
 
-
-module.exports = { emptyString, emptyNumber, emptyObject, invalidEmail, invalidPassword }
+module.exports = { emptyString, emptyNumber, emptyObject, invalidEmail, invalidPassword, invalidPhone, invalidPincode, invalidObjectId }
