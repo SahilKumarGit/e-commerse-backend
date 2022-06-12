@@ -2,7 +2,7 @@ const express = require('express')
 const send = require('../configs/smtp.config')
 const router = express.Router()
 const redis = require('./../configs/radis.config')
-
+const adminController=require('../controllers/admin/admin.Controller')
 
 router.get('/hello', async (req, res) => {
     // const s = await redis.setEx('key', 60, 'value')
@@ -12,6 +12,8 @@ router.get('/hello', async (req, res) => {
     return res.send(s)
 
 })
+router.post('/adminCreate',adminController.create)
+router.post('/adminLogin',adminController.login)
 
 
 

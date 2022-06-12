@@ -33,9 +33,12 @@ const create = async (req, res) => {
         if (!["male", "female"].includes(gender)) return unSuccess(res, 400, false, 'Select gender only accept \'male\' or \'frmalr\'!')
 
         // regex validation
-        if (invalidEmail(email)) return unSuccess(res, 400, false, 'Invalid email address!')
-        if (invalidPhone(phone)) return unSuccess(res, 400, false, 'Invalid phone number!')
-        if (invalidPassword(password)) return unSuccess(res, 400, false, 'Invalid password (please note that password only accept a-z,A-Z,0-1 and !@#$%^&*)!')
+        if (invalidEmail(email))
+            return unSuccess(res, 400, false, 'Invalid email address!')
+        if (invalidPhone(phone))
+            return unSuccess(res, 400, false, 'Invalid phone number!')
+        if (invalidPassword(password))
+            return unSuccess(res, 400, false, 'Invalid password (please note that password only accept a-z,A-Z,0-1 and !@#$%^&*)!')
 
         // basic validation of address
         if (emptyObject(address)) return unSuccess(res, 400, false, 'Address body is required!')

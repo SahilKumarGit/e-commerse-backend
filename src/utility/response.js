@@ -1,4 +1,4 @@
-const success = (res, code, login, data, message) => {
+const success = (res, code, login, message, data) => {
     return res.status(code).send({ status: true, login, message, data })
 }
 

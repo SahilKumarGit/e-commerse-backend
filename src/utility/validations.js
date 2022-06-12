@@ -19,7 +19,10 @@ const emptyObject = (obj) => {
     }
     return true
 }
-
+let isValidRequestBody = function (body) {
+    if (Object.keys(body).length === 0) return true;
+    return false;
+}
 const invalidEmail = (email) => {
     let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
     return !emailRegex.test(email)
@@ -43,8 +46,25 @@ const invalidPincode = function (value) {
 let invalidObjectId = function (ObjectId) {
     return !mongoose.isValidObjectId(ObjectId)
 }
+let anyObjectKeysEmpty = (value) => {
+    let obArr = Object.keys(value)
+    let str = ''
+    obArr.forEach(e => {
+        if (value.hasOwnProperty(e) && value[e].trim() == "") {
+            str += `${e} `
+        }
+    })
+}
 
-
-
-
-module.exports = { emptyString, emptyNumber, emptyObject, invalidEmail, invalidPassword, invalidPhone, invalidPincode, invalidObjectId }
+module.exports = {
+    emptyString,
+    emptyNumber,
+    emptyObject, 
+    invalidEmail, 
+    invalidPassword, 
+    invalidPhone, 
+    invalidPincode, 
+    invalidObjectId,
+    anyObjectKeysEmpty,
+    isValidRequestBody
+}

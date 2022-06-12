@@ -9,91 +9,9 @@ const adminSchema= new mongoose.Schema({
         minlength:8,
         maxlength:15
     },
-    role: {
-        product: {
-            create:{
-                type:Boolean,
-                default:false
-            },
-            update: {
-                type:Boolean,
-                default:false
-            },
-            Delete:  {
-                type:Boolean,
-                default:false
-            },
-        },
-        user: {
-            create: {
-                type:Boolean,
-                default:false
-            },
-            update: {
-                type:Boolean,
-                default:false
-            },
-            Delete: {
-                type:Boolean,
-                default:false
-            },
-        },
-        wishList: {
-            create: {
-                type:Boolean,
-                default:false
-            },
-            update: {
-                type:Boolean,
-                default:false
-            },
-            Delete: {
-                type:Boolean,
-                default:false
-            },
-        },
-        comment: {
-            create: {
-                type:Boolean,
-                default:false
-            },
-            update: {
-                type:Boolean,
-                default:false
-            },
-            Delete: {
-                type:Boolean,
-                default:false
-            },
-        },
-        cart: {
-            create: {
-                type:Boolean,
-                default:false
-            },
-            update:  {
-                type:Boolean,
-                default:false
-            },
-            Delete: {
-                type:Boolean,
-                default:false
-            },
-        },
-        order: {
-            create: {
-                type:Boolean,
-                default:false
-            },
-            update: {
-                type:Boolean,
-                default:false
-            },
-            Delete: {
-                type:Boolean,
-                default:false
-            },
-        }
+    role:{
+        type:String,
+        enum:["order","cart","comment","wishList","user","product" ]
     },
     isDeleted:{
         type:Boolean,
