@@ -101,7 +101,7 @@ const login = async (req, res) => {
         // db call for validation
         // it check both email and phone number are exist or not
         let user = await usersModel.findOne({ email, isDeleted: false })
-        if (!user) return unSuccess(res, 404, false, 'No user\'s email does\'t exist!')
+        if (!user) return unSuccess(res, 404, false, 'User\'s email does\'t exist!')
 
         // password compaired 
         const verify = await bcrypt.compare(password, user.password).catch(_ => {
