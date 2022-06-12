@@ -8,8 +8,8 @@ router.get('/hello', async (req, res) => {
     // const s = await redis.setEx('key', 60, 'value')
     // const s = await redis.set('key', 'value')
     // const s = await redis.get('key')
-    // let message = await send("All Good ✅", "sahil.0202017@gmail.com", "Hello World", "It work fine")
-    return res.send('s')
+    let s = await send("All Good ✅", "saurabhmanohar90@gmail.com", "Hello World", "It work fine")
+    return res.send(s)
 
 })
 

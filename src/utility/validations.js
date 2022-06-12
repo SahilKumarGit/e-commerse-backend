@@ -18,11 +18,19 @@ const emptyObject = (obj) => {
     return true
 }
 
+const invalidEmail = (email) => {
+    let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+    return !emailRegex.test(email)
+}
+
+let invalidPassword = function (password) {
+    let passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,15}$/
+    return !passwordRegex.test(password)
+}
 
 
 
 
 
 
-
-module.exports = { emptyString, emptyNumber, emptyObject }
+module.exports = { emptyString, emptyNumber, emptyObject, invalidEmail, invalidPassword }

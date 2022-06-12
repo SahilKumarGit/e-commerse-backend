@@ -13,7 +13,7 @@ client.connect()
 module.exports = client
 
 /*
-    const s = await redis.setEx('key', 60, 'value')
-    const s = await redis.set('key', 'value')
-    const s = await redis.get('key')
+    const s = await client.setEx('key', 60, 'value')
+    const s = await client.set('key', 'value')
+    const s = await client.get('key')
 */
