@@ -13,5 +13,4 @@ router.get('/verify/:key', user.verifyEmail)
 
 
 
-
 module.exports = router
