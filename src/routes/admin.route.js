@@ -1,19 +1,16 @@
 const express = require('express')
-const send = require('../configs/smtp.config')
 const router = express.Router()
-const redis = require('./../configs/radis.config')
-const adminController=require('../controllers/admin/admin.Controller')
+const adminController = require('../controllers/admin/admin.Controller')
+const { uploadImage } = require('../controllers/upload/images.controller')
+const createProduct = require('./../controllers/product/create.controller')
+const { authentication, authrization } = require('./../middleware/admin/auth')
 
-router.get('/hello', async (req, res) => {
-    // const s = await redis.setEx('key', 60, 'value')
-    // const s = await redis.set('key', 'value')
-    // const s = await redis.get('key')
-    let s = await send("All Good ✅", "saurabhmanohar90@gmail.com", "Hello World", "It work fine")
-    return res.send(s)
+router.post('/uploadImage', uploadImage)
+router.post('/register', adminController.create)
+router.post('/login', adminController.login)
 
-})
-router.post('/adminCreate',adminController.create)
-router.post('/adminLogin',adminController.login)
+// product
+router.post('/product/create', authentication, authrization, createProduct)
 
 
 

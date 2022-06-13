@@ -76,7 +76,7 @@ const create = async (req, res) => {
         const object = { firstName, lastName, email, phone, password: encryptedPassword, address, gender }
         let create = await usersModel.create(object)
 
-        res.status(200).send({ status: true, login: !true, message: 'Account create successfully', data: create })
+        res.status(201).send({ status: true, login: !true, message: 'Account create successfully', data: create })
     } catch (e) {
         return unSuccess(res, 500, false, e.message)
     }

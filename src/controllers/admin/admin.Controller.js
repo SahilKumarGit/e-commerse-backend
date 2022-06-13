@@ -1,6 +1,6 @@
 const adminModel = require('../../models/admin.model')
 const jwt = require('jsonwebtoken')
-const { emptyObject, emptyString, emptyNumber, invalidEmail, invalidPassword, invalidPincode, invalidPhone, invalidObjectId, isValidRequestBody } = require("../../utility/validations");
+const { emptyObject, emptyString, emptyNumber, invalidEmail, invalidPassword, invalidPincode, invalidPhone, invalidObjectId } = require("../../utility/validations");
 const { unSuccess, success } = require("../../utility/response");
 const { secretkey } = require("../../environment/config.env");
 
@@ -9,14 +9,13 @@ const create = async (req, res) => {
     try {
         let data = req.body
         let { name, email, password, phone, role } = data
-        if (isValidRequestBody(data)) return unSuccess(res, 400, false, ' data cannot be empty!')
+        if (emptyObject(data)) return unSuccess(res, 400, false, ' data cannot be empty!')
         if (emptyString(name)) return unSuccess(res, 400, false, 'Name is required!')
         if (emptyString(email)) return unSuccess(res, 400, false, 'Email address is required!')
         if (emptyString(phone)) return unSuccess(res, 400, false, 'Phone number is required!')
         if (emptyString(password)) return unSuccess(res, 400, false, 'Password is required!')
         if (role) {
-            if (!["order", "cart", "comment", "wishList", "user", "product"].includes(role))
-                return unSuccess(res, 400, false, 'role can only be "order","cart","comment","wishList","user","product"')
+            if (!["order", "cart", "comment", "wishList", "user", "product"].includes(role)) return unSuccess(res, 400, false, 'role can only be "order","cart","comment","wishList","user","product"')
         }
         if (invalidEmail(email)) return unSuccess(res, 400, false, 'Invalid email address!')
         if (invalidPhone(phone)) return unSuccess(res, 400, false, 'Invalid phone number!')
@@ -40,7 +39,7 @@ const create = async (req, res) => {
 const login = async (req, res) => {
     try {
         let data = req.body
-        if (isValidRequestBody(data)) return unSuccess(res, 400, false, ' data cannot be empty!')
+        if (emptyObject(data)) return unSuccess(res, 400, false, ' data cannot be empty!')
         let { email, password } = data
 
         if (emptyString(email)) return unSuccess(res, 400, false, 'Email address is required!')
@@ -53,14 +52,14 @@ const login = async (req, res) => {
         let verify = await adminModel.findOne({ password: password })
         if (!verify) return unSuccess(res, 401, false, 'Wrong email address or password!')
         const token = jwt.sign({
-            adminId:admin._id
+            adminId: admin._id
         }, secretkey, {
             expiresIn: '24h'
         });
-        return success(res, 200, true, { token }, "Successfully Logged-In!")
+        return success(res, 200, true, "Successfully Logged-In!", { token })
 
     }
-    catch (e) { 
+    catch (e) {
         return unSuccess(res, 500, false, e.message)
     }
 }
