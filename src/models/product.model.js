@@ -63,6 +63,10 @@ const productSchema = new mongoose.Schema({
             type: Number,
             default: 0
         },
+        "XS/S": {
+            type: Number,
+            default: 0
+        },
         "S": {
             type: Number,
             default: 0

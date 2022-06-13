@@ -15,12 +15,13 @@ const cartSchema = new mongoose.Schema({
         quantity: {
             type: Number,
             trim: true,
-            default: 0
+            default: 0,
+            max: 10
         },
         size: {
             type: String,
             trim: true,
-            enum: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"]
+            enum: ["3XS", "XXS", "XS", "XS/S", "S", "M", "L", "XL", "XL/XXL", "XXL", "3XL", "4XL", "5XL", "6XL", "7XL", "8XL", "9XL", "10XL", "11XL", "ONESIZE"]
         }
     }]
 }, { timestamps: true })
