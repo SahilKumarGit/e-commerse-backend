@@ -8,6 +8,7 @@ const client = require("../../configs/radis.config");
 const sendMail = require("../../configs/smtp.config");
 const { secretkey } = require("../../environment/config.env");
 const userModel = require("../../models/user.model");
+const cartModel = require("../../models/cart.Model");
 
 
 const saltRounds = 10;
@@ -76,7 +77,10 @@ const create = async (req, res) => {
         const object = { firstName, lastName, email, phone, password: encryptedPassword, address, gender }
         let create = await usersModel.create(object)
 
-        res.status(201).send({ status: true, login: !true, message: 'Account create successfully', data: create })
+        // create empty cart 
+        const cart = await cartModel.create({ user: create._id })
+
+        res.status(201).send({ status: true, login: !true, message: 'Account create successfully', create })
     } catch (e) {
         return unSuccess(res, 500, false, e.message)
     }

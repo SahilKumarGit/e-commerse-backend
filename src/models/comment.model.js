@@ -5,18 +5,17 @@ const commentSchema = new mongoose.Schema({
     userId: {
         type: ObjectId,
         ref: 'User',
-        required:true,
-        unique: true
+        required: true
     },
-    // productId: {
-    //     type: ObjectId,
-    //     ref:'Product',
-    //     unique:true
-    // },
+    productId: {
+        type: ObjectId,
+        ref: 'Product',
+        required: true
+    },
     message: String,
     rating: {
         type: Number,
-        required:true,
+        required: true,
         min: 1,
         max: 5
     },
@@ -25,7 +24,8 @@ const commentSchema = new mongoose.Schema({
         default: false
     },
     deletedAt: {
-        type: Date
+        type: Date,
+        default: null
     }
 }, { timestamps: true })
 

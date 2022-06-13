@@ -15,7 +15,7 @@ const create = async (req, res) => {
 
         if (emptyObject(data)) return unSuccess(res, 400, true, 'Post body is required!')
 
-        let { images, brandName, title, filter, price, availableStock, size, highlights, category, sortDescription, size_fit, material_care, specification } = data
+        let { images, brandName, title, filter, price, size_and_inventory, highlights, category, shortDescription, size_fit, material_care, specification } = data
 
         // basic validation
         if (emptyArray(images)) return unSuccess(res, 400, true, 'Array of images are required!')
@@ -23,13 +23,9 @@ const create = async (req, res) => {
         if (emptyString(title)) return unSuccess(res, 400, true, 'Title id is required!')
         if (emptyObject(price)) return unSuccess(res, 400, true, 'Price object is required!')
         if (emptyString(category)) return unSuccess(res, 400, true, 'Category is required!')
-        if (emptyString(sortDescription)) return unSuccess(res, 400, true, 'SortDescription is required!')
+        if (emptyString(shortDescription)) return unSuccess(res, 400, true, 'ShortDescription is required!')
         if (emptyString(size_fit)) return unSuccess(res, 400, true, 'Size_fit is required!')
         if (emptyString(material_care)) return unSuccess(res, 400, true, 'Material_care is required!')
-
-        // availableStock validation
-        if (emptyNumber(availableStock)) return unSuccess(res, 400, true, 'AvailableStock is required!')
-        if (availableStock < 10) return unSuccess(res, 400, true, 'add minimum availableStock is > 9!')
 
         // destructure price
         let { mrp, total, includeTax } = price
@@ -38,10 +34,8 @@ const create = async (req, res) => {
         if (emptyNumber(total)) return unSuccess(res, 400, true, 'Total price is required!')
         let discount = mth.roundOf(((mrp - total) / mrp) * 100)
 
-        // size validation
-        if (!size) return unSuccess(res, 400, true, 'Size is required!')
-        if (!Array.isArray(size)) return unSuccess(res, 400, true, 'Size must be an array required!')
-        if (notExistInArray(["XS", "S", "M", "L", "XL", "XXL", "XXXL"], size)) return unSuccess(res, 400, true, 'Size only accept any of - XS, S, M, L, XL, XXL, XXXL !')
+        // size and inventory validation
+        if (emptyObject(size_and_inventory)) return unSuccess(res, 400, true, 'Size_and_inventory is required (as a object)!')
 
         // filter validation
         if (emptyString(filter)) return unSuccess(res, 400, true, 'Filter id is required!')
@@ -67,11 +61,10 @@ const create = async (req, res) => {
                 total,
                 includeTax
             },
-            availableStock,
-            size,
+            size_and_inventory,
             highlights,
             category,
-            sortDescription,
+            shortDescription,
             size_fit,
             material_care,
             specification

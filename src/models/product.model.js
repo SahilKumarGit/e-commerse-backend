@@ -50,15 +50,83 @@ const productSchema = new mongoose.Schema({
             default: true
         }
     },
-    availableStock: {
-        type: Number,
-        required: true,
-        default: 0
-    },
-    size: {
-        type: [String],
-        required: true,
-        enum: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"]
+    size_and_inventory: {
+        "3XS": {
+            type: Number,
+            default: 0
+        },
+        "XXS": {
+            type: Number,
+            default: 0
+        },
+        "XS": {
+            type: Number,
+            default: 0
+        },
+        "S": {
+            type: Number,
+            default: 0
+        },
+        "M": {
+            type: Number,
+            default: 0
+        },
+        "L": {
+            type: Number,
+            default: 0
+        },
+        "XL": {
+            type: Number,
+            default: 0
+        },
+        "XL/XXL": {
+            type: Number,
+            default: 0
+        },
+        "XXL": {
+            type: Number,
+            default: 0
+        },
+        "3XL": {
+            type: Number,
+            default: 0
+        },
+        "4XL": {
+            type: Number,
+            default: 0
+        },
+        "5XL": {
+            type: Number,
+            default: 0
+        },
+        "6XL": {
+            type: Number,
+            default: 0
+        },
+        "7XL": {
+            type: Number,
+            default: 0
+        },
+        "8XL": {
+            type: Number,
+            default: 0
+        },
+        "9XL": {
+            type: Number,
+            default: 0
+        },
+        "10XL": {
+            type: Number,
+            default: 0
+        },
+        "11XL": {
+            type: Number,
+            default: 0
+        },
+        "ONESIZE": {
+            type: Number,
+            default: 0
+        }
     },
     highlights: {
         type: [String],
@@ -69,7 +137,7 @@ const productSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    sortDescription: {
+    shortDescription: {
         type: String,
         required: true,
         trim: true

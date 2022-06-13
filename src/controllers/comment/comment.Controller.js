@@ -2,7 +2,7 @@ const commentModel = require('../../models/comment.model')
 const { emptyObject, emptyString, emptyNumber, invalidObjectId, isValidRequestBody } = require("../../utility/validations");
 const { unSuccess, success } = require("../../utility/response");
 const userModel = require('../../models/user.model');
-//const productModel = require('')
+const productModel = require('./../../models/product.model')
 
 
 const create = async (req, res) => {
@@ -12,7 +12,7 @@ const create = async (req, res) => {
         if (isValidRequestBody(data)) return unSuccess(res, 400, true, 'data cannot be empty!')
         if (invalidObjectId(userId)) return unSuccess(res, 400, true, 'enter valid userId!')
         if (emptyString(userId)) return unSuccess(res, 400, true, 'userId is required!')
-        //if (invalidObjectId(productId)) return unSuccess(res, 400, true, 'enter valid productId!')
+        if (invalidObjectId(productId)) return unSuccess(res, 400, true, 'enter valid productId!')
         if (emptyNumber(rating)) return unSuccess(res, 400, true, 'rating is required!')
         if (rating < 1 || rating > 5) return unSuccess(res, 400, true, 'rating is 1 to 5 only !')
         if (!message.match(/^[a-zA-Z0-9\s]+$/)) return unSuccess(res, 400, true, 'comment is not valid !')
@@ -20,8 +20,11 @@ const create = async (req, res) => {
         //db call verify user
         let userVerify = await userModel.findOne({ _id: userId, isDeleted: false })
         if (!userVerify) return unSuccess(res, 404, false, 'user not found enter valid user Id!')
+
         // product verify
-        //let product= await productModel.findOne({_id:productId,isDeleted:false})
+        let product= await productModel.findOne({_id:productId,isDeleted:false})
+        if (!product) return unSuccess(res, 404, false, 'product not found enter valid product Id!')
+
         //create comment 
         let result = await commentModel.create(data)
         return success(res, 201, false, "comment created", result)
