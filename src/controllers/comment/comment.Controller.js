@@ -39,24 +39,31 @@ const update = async (req, res) => {
         let data = req.body
         let Id = req.tokenData.userId
         data.userId = Id
-        let { userId, message, rating } = data
+        let { userId, message, rating, productId } = data
         if (invalidObjectId(userId)) return unSuccess(res, 400, true, 'enter valid userId!')
+        if (invalidObjectId(productId)) return unSuccess(res, 400, true, 'enter valid productId!')
         if (emptyString(userId)) return unSuccess(res, 400, true, 'userId is required!')
         if (rating < 1 || rating > 5) return unSuccess(res, 400, true, 'rating is 1 to 5 only !')
-        if (!message.match(/^[a-zA-Z0-9\s]+$/)) return unSuccess(res, 400, true, 'comment is not valid !')
-
-
+        if (message) {
+            if (emptyString(message)) return unSuccess(res, 400, true, 'message cannot be empty!')
+            if (!message.match(/^[a-zA-Z0-9\s]+$/)) return unSuccess(res, 400, true, 'comment is not valid !')
+        }
+        //db calls
+        let product = await productModel.findOne({ _id: productId, isDeleted: false })
+        if (!product) return unSuccess(res, 404, true, 'product not found')
         // comment verify
-        let comment = await commentModel.findOne({ userId: userId, isDeleted: false })
-        if (!comment) return unSuccess(res, 404, true, 'comment not found')
-        if (comment.userId.toString() !== userId) return unSuccess(res, 403, true, 'unauthorised!')
+        let obj = {}
+
         if (rating) {
-            comment.rating = rating;
+            obj.rating = rating;
         }
         if (message) {
-            comment.message = message;
+            obj.message = message;
         }
-        await comment.save()
+
+        let comment = await commentModel.findOneAndUpdate(
+            { userId: userId, isDeleted: false, productId: productId }, obj, { new: true })
+        if (!comment) return unSuccess(res, 404, true, 'comment not found')
         return success(res, 200, true, "comment update", comment)
 
     } catch (e) {
@@ -69,16 +76,22 @@ const update = async (req, res) => {
 
 const deletecomment = async (req, res) => {
     try {
-        let userId = req.body.userId
-        userId = req.tokenData.userId
+        let data = req.body
+        let Id = req.tokenData.userId
+        data.userId = Id
+        let { userId, productId } = data
         if (invalidObjectId(userId)) return unSuccess(res, 400, true, 'enter valid userId!')
-        //if (emptyString(userId)) return unSuccess(res, 400, true, 'userId is required!')
+        if (invalidObjectId(productId)) return unSuccess(res, 400, true, 'enter valid productId!')
         // db calls 
+        let product = await productModel.findOne({ _id: productId, isDeleted: false })
+        if (!product) return unSuccess(res, 404, true, 'product not found')
         // comment verify
         let comment = await commentModel.findOne({ userId: userId, isDeleted: false })
         if (!comment) return unSuccess(res, 404, true, 'comment not found')
         if (comment.userId.toString() !== userId) return unSuccess(res, 403, true, 'unauthorised!')
         comment.isDeleted = true
+        comment.deletedAt = new Date()
+
         await comment.save();
         return success(res, 200, true, "comment deleted")
     } catch (e) {
