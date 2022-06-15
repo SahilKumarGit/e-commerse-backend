@@ -2,6 +2,7 @@ const express = require('express')
 const user = require('./../controllers/users/user.controller')
 const product = require('./../controllers/product/product.controller')
 const comment = require('../controllers/comment/comment.Controller')
+const cart = require('../controllers/cart/cart.Controller')
 const { authentication, authrization } = require('../middleware/public/auth.middleware')
 const router = express.Router()
 
@@ -25,6 +26,9 @@ router.delete('/comment/delete',authentication,authrization,comment.deletecommen
 
 // product API routers
 router.get('/product/:productId', product.viewOne)
+
+//cart api
+router.put('/cart/Addtocart',authentication,authrization,cart.cartUpdate)
 
 
 

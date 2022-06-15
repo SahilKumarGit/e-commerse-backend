@@ -77,8 +77,9 @@ const create = async (req, res) => {
         const object = { firstName, lastName, email, phone, password: encryptedPassword, address, gender }
         let create = await usersModel.create(object)
 
+
         // create empty cart 
-        const cart = await cartModel.create({ user: create._id })
+        await cartModel.create({ userId: create._id.toString() })
 
         res.status(201).send({ status: true, login: false, message: 'Account create successfully', create })
     } catch (e) {
