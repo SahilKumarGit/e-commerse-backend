@@ -168,45 +168,6 @@ const productSchema = new mongoose.Schema({
             required: true
         }
     }],
-    rating: {
-        average: {
-            type: Number,
-            required: true,
-            default: 0
-        },
-        totalUsers: {
-            type: Number,
-            required: true,
-            default: 0
-        },
-        rating: {
-            oneStar: {
-                type: Number,
-                required: true,
-                default: 0
-            },
-            twoStar: {
-                type: Number,
-                required: true,
-                default: 0
-            },
-            threeStar: {
-                type: Number,
-                required: true,
-                default: 0
-            },
-            fourStar: {
-                type: Number,
-                required: true,
-                default: 0
-            },
-            fiveStar: {
-                type: Number,
-                required: true,
-                default: 0
-            },
-        }
-    },
     isDeleted: {
         type: Boolean,
         required: true,

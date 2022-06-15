@@ -16,8 +16,7 @@ const commentSchema = new mongoose.Schema({
     rating: {
         type: Number,
         required: true,
-        min: 1,
-        max: 5
+        enum: [1, 2, 3, 4, 5]
     },
     isDeleted: {
         type: Boolean,

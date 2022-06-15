@@ -80,7 +80,7 @@ const create = async (req, res) => {
         // create empty cart 
         const cart = await cartModel.create({ user: create._id })
 
-        res.status(201).send({ status: true, login: !true, message: 'Account create successfully', create })
+        res.status(201).send({ status: true, login: false, message: 'Account create successfully', create })
     } catch (e) {
         return unSuccess(res, 500, false, e.message)
     }
@@ -146,7 +146,7 @@ const login = async (req, res) => {
             expiresIn: '24h'
         });
 
-        return success(res, 200, true, { token }, "Successfully Logged-In!")
+        return success(res, 200, true, "Successfully Logged-In!", { token })
 
     } catch (e) {
         return unSuccess(res, 500, false, e.message)
@@ -200,5 +200,149 @@ const verifyEmail = async (req, res) => {
 
 
 
+// ⬇️ get profile -------------------------------------------
+const getUser = async (req, res) => {
+    try {
+        // get data params 
+        const user = req.user;
 
-module.exports = { create, login, verifyEmail }
+        const Obj = {
+            _id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            emailVerified: user.emailVerified,
+            phone: user.phone,
+            password: user.password,
+            gender: user.gender,
+            isDeleted: user.isDeleted,
+            deletedAt: user.deletedAt,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+        }
+
+        return success(res, 200, true, 'Profile found', Obj)
+
+    } catch (e) {
+        return unSuccess(res, 500, true, e.message)
+    }
+}
+
+
+
+// ⬇️ get address -------------------------------------------
+const address = async (req, res) => {
+    try {
+        // get data params 
+        const user = req.user;
+
+        return success(res, 200, true, 'Profile found', user.address)
+
+    } catch (e) {
+        return unSuccess(res, 500, true, e.message)
+    }
+}
+
+
+
+// ⬇️ get profile -------------------------------------------
+const updateUser = async (req, res) => {
+    try {
+        // get data medelware 
+        const user = req.user;
+        const tokenData = req.tokenData;
+
+        // get data frob body
+        const data = req.body;
+
+        if (emptyObject(data)) return unSuccess(res, 400, true, 'Body must be required')
+        // destructure data
+
+        let { firstName, lastName, email, phone, password, gender } = data
+
+        // basic validation
+        if (!emptyString(firstName)) user.firstName = firstName
+        if (!emptyString(lastName)) user.lastName = lastName
+        if (!emptyString(email)) {
+            if (invalidEmail(email)) return unSuccess(res, 400, false, 'Invalid email address!')
+            user.email = email
+        }
+        if (!emptyString(phone)) {
+            if (invalidPhone(phone)) return unSuccess(res, 400, false, 'Invalid phone number!')
+            user.phone = phone
+        }
+        if (!emptyString(gender)) {
+            if (!["male", "female"].includes(gender)) return unSuccess(res, 400, false, 'Select gender only accept \'male\' or \'frmalr\'!')
+            user.gender = gender
+        }
+
+        // db call for validation
+        // it check both email and phone number are exist or not
+        let userCheck = await usersModel.find({ _id: { $ne: tokenData.userId }, $or: [{ phone: phone }, { email: email }] })
+        for (let each of userCheck) {
+            if (each.email == email) return unSuccess(res, 400, false, 'Email address is already exist!')
+            if (each.phone == phone) return unSuccess(res, 400, false, 'Phone number is already exist!')
+        }
+
+        await user.save();
+
+        const Obj = {
+            _id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            emailVerified: user.emailVerified,
+            phone: user.phone,
+            password: user.password,
+            gender: user.gender,
+            isDeleted: user.isDeleted,
+            deletedAt: user.deletedAt,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+        }
+
+        return success(res, 200, true, 'Profile updated', Obj)
+
+    } catch (e) {
+        return unSuccess(res, 500, true, e.message)
+    }
+}
+
+
+
+// ⬇️ get address -------------------------------------------
+const updateAddress = async (req, res) => {
+    try {
+        // get data
+        const data = req.body;
+        if (emptyObject(data)) return unSuccess(res, 400, false, 'Body is required!')
+
+        // destructure address
+        let { type, address, city, state, pincode } = data
+
+        if (emptyString(type)) return unSuccess(res, 400, false, 'Type is required!')
+        if (!["billing", "shipping"].includes(type)) return unSuccess(res, 400, false, 'Type is accept only billing, shipping!')
+
+        // get data params 
+        const user = req.user;
+        const ADS = user.address[type]
+
+        // validation of - billing address
+        if (!emptyString(address)) ADS.address = address
+        if (!emptyString(city)) ADS.city = city
+        if (!emptyString(state)) ADS.state = state
+        if (!emptyNumber(pincode)) {
+            if (invalidPincode(pincode)) return unSuccess(res, 400, false, 'In billing, pincode is invalid!')
+            ADS.pincode = pincode
+        }
+
+        await user.save();
+        return success(res, 200, true, 'Profile found', ADS)
+
+    } catch (e) {
+        return unSuccess(res, 500, true, e.message)
+    }
+}
+
+
+module.exports = { create, login, verifyEmail, getUser, address, updateUser, updateAddress }

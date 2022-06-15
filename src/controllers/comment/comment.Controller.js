@@ -1,8 +1,7 @@
 const commentModel = require('../../models/comment.model')
 const { emptyObject, emptyString, emptyNumber, invalidObjectId, isValidRequestBody } = require("../../utility/validations");
 const { unSuccess, success } = require("../../utility/response");
-const userModel = require('../../models/user.model');
-const productModel = require('./../../models/product.model')
+const productModel = require('./../../models/product.model');
 
 
 const create = async (req, res) => {
@@ -16,20 +15,24 @@ const create = async (req, res) => {
         if (emptyString(userId)) return unSuccess(res, 400, true, 'userId is required!')
         if (invalidObjectId(productId)) return unSuccess(res, 400, true, 'enter valid productId!')
         if (emptyNumber(rating)) return unSuccess(res, 400, true, 'rating is required!')
-        if (rating < 1 || rating > 5) return unSuccess(res, 400, true, 'rating is 1 to 5 only !')
-        if (!message.match(/^[a-zA-Z0-9\s]+$/)) return unSuccess(res, 400, true, 'comment is not valid !')
+        if (![1, 2, 3, 4, 5].includes(rating)) return unSuccess(res, 400, true, 'rating is 1 to 5 numbers only !')
+        if (emptyString(message)) return unSuccess(res, 400, true, 'comment is required!')
+        if (!message.match(/^[a-zA-Z0-9\s]+$/)) return unSuccess(res, 400, true, 'comment is not valid!')
 
         // product verify
         let product = await productModel.findOne({ _id: productId, isDeleted: false })
-        if (!product) return unSuccess(res, 404, false, 'product not found enter valid product Id!')
-        //
+        if (!product) return unSuccess(res, 404, true, 'product not found enter valid product Id!')
+
         let comment = await commentModel.findOne({ userId: userId, isDeleted: false })
         if (comment) return unSuccess(res, 400, true, 'comment already exists!')
+
         //create comment 
         let result = await commentModel.create(data)
-        return success(res, 201, false, "comment created", result)
+        return success(res, 201, true, "comment created", result)
+        
     } catch (e) {
-        return unSuccess(res, 500, false, e.message)
+        console.log(e)
+        return unSuccess(res, 500, true, e.message)
     }
 }
 
@@ -67,7 +70,7 @@ const update = async (req, res) => {
         return success(res, 200, true, "comment update", comment)
 
     } catch (e) {
-        return unSuccess(res, 500, false, e.message)
+        return unSuccess(res, 500, true, e.message)
 
     }
 }
@@ -95,7 +98,7 @@ const deletecomment = async (req, res) => {
         await comment.save();
         return success(res, 200, true, "comment deleted")
     } catch (e) {
-        return unSuccess(res, 500, false, e.message)
+        return unSuccess(res, 500, true, e.message)
     }
 }
 
