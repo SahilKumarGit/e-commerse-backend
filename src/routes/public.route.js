@@ -29,6 +29,10 @@ router.get('/product/:productId', product.viewOne)
 
 //cart api
 router.put('/cart/Addtocart',authentication,authrization,cart.cartUpdate)
+router.put('/cart/removeFromcart',authentication,authrization,cart.removeItemincart)
+router.get('/cart/Mycart',authentication,authrization,cart.viewCart)
+router.delete('/cart/deleteMycart',authentication,authrization,cart.deleteCart)
+
 
 
 
