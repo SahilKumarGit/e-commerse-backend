@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon src/index.js",
-    "gitPush":"git add . && git commit -m \"command from node!\" && git push https://github.com/SahilKumarGit/e-commerse-backend.git"
+    "gitpush":"git add . && git commit -m \"command from node!\" && git push https://github.com/SahilKumarGit/e-commerse-backend.git",
+    "gitpull":" git pull https://github.com/SahilKumarGit/e-commerse-backend.git"
   },
   "repository": {
     "type": "git",
