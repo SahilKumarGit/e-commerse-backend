@@ -9,6 +9,7 @@ const sendMail = require("../../configs/smtp.config");
 const { secretkey } = require("../../environment/config.env");
 const userModel = require("../../models/user.model");
 const cartModel = require("../../models/cart.Model");
+const wishList = require("../../models/wishlist.Model");
 
 
 const saltRounds = 10;
@@ -80,6 +81,7 @@ const create = async (req, res) => {
 
         // create empty cart 
         await cartModel.create({ userId: String(create._id) })
+        await wishList.create({ userId: String(create._id) })
 
         res.status(201).send({ status: true, login: false, message: 'Account create successfully', create })
     } catch (e) {
