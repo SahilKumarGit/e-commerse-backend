@@ -5,15 +5,18 @@ const public_route = require('./routes/public.route')
 const admin_route = require('./routes/admin.route')
 const { mongoDB } = require('./environment/config.env')
 const mongoose = require('mongoose')
+const cors = require('cors');
+
 
 const app = express()
 const port = 3000
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(multer().any())
+app.use(cors({ origin: '*' }))
 
 
 // Mongoose - MongoDB - Connect

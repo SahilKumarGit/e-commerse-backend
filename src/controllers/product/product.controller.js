@@ -208,7 +208,7 @@ const viewOne = async (req, res) => {
         let TOTAL_PEOPLE = ratingObj.STAR_1 + ratingObj.STAR_2 + ratingObj.STAR_3 + ratingObj.STAR_4 + ratingObj.STAR_5
         // AVRAGE formula = ((1*votersof1) +(2*votersof2) +(3*votersof3) +(4*votersof4) +(5*votersof5)) / total voters
         let AVRAGE = (1 * ratingObj.STAR_1) + (2 * ratingObj.STAR_2) + (3 * ratingObj.STAR_3) + (4 * ratingObj.STAR_4) + (5 * ratingObj.STAR_5)
-        AVRAGE = mth.roundOf(AVRAGE / TOTAL_PEOPLE, 10)
+        AVRAGE = mth.roundOf(AVRAGE / TOTAL_PEOPLE, 10) || 0
 
         // taring final object
         let RATING_FINAL = { PEOPLE: ratingObj, AVRAGE, TOTAL_PEOPLE }
@@ -243,4 +243,117 @@ const viewOne = async (req, res) => {
 
 
 
-module.exports = { create, viewOne, update, remove }
+
+// ⬇️ get single product ---------------------------------------
+
+const viewAll = async (req, res) => {
+    try {
+
+        // get QueryData
+        const query = req.query
+        // console.log(query)
+        // default Query
+        const queryObj = {}
+        const sortObj = {}
+
+        let page = 1
+        let row = 40
+
+        if (!emptyObject(query)) {
+            if (!emptyString(query.page)) page = Number(query.page)
+            if (!emptyString(query.row)) row = Number(query.row)
+            if (!emptyString(query.filter)) queryObj.filter = query.filter
+            if (query.categories) queryObj.category = { $in: query.categories }
+            if (query.brands) queryObj.brandName = { $in: query.brands }
+            if (query.discount) queryObj["price.discount"] = { $gte: query.discount }
+            if (!emptyString(query.sortBy) && !emptyString(query.inOrder)) sortObj[query.sortBy] = Number(query.inOrder)
+        }
+
+        queryObj.isDeleted = false
+        // console.log(queryObj)
+        // console.log(sortObj)
+
+        // call DB here
+        const productList = await productModel.find(queryObj).sort(sortObj)
+            .select({ admin: 0, size_and_inventory: 0, size_fit: 0, material_care: 0, specification: 0, isDeleted: 0, deletedAt: 0, __v: 0, createdAt: 0, updatedAt: 0 })
+            .skip((page - 1) * row)
+            .limit(row)
+
+        const totalProducts = await productModel.count(queryObj)
+        const totalPages = Math.ceil(totalProducts / row)
+
+        // categories and more
+        let querySelect = { isDeleted: false }
+        if (queryObj.filter) querySelect.filter = queryObj.filter
+
+        const brands = await productModel.aggregate([
+            { "$match": querySelect },
+            {
+                "$group": {
+                    "_id": "$brandName", "count": { "$sum": 1 }
+                }
+            },
+            { "$sort": { "_id": 1 } }
+        ])
+
+        const categories = await productModel.aggregate([
+            { "$match": querySelect },
+            {
+                "$group": {
+                    "_id": "$category", "count": { "$sum": 1 }
+                }
+            },
+            { "$sort": { "_id": 1 } }
+        ])
+
+        const discount = [10, 20, 30, 40, 50, 60, 70, 80]
+        const genders = ["men", "women", "boys", "girls"]
+        const sortBy = [
+            {
+                title: "Discount: High to Low",
+                sortBy: "price.discount",
+                inOrder: -1
+            },
+            {
+                title: "Discount: Low to High",
+                sortBy: "price.discount",
+                inOrder: 1
+            },
+            {
+                title: "Price: High to Low",
+                sortBy: "price.total",
+                inOrder: -1
+            },
+            {
+                title: "Price: Low to High",
+                sortBy: "price.total",
+                inOrder: 1
+            },
+            {
+                title: "Title: Z to A",
+                sortBy: "title",
+                inOrder: -1
+            },
+            {
+                title: "Title: A to Z",
+                sortBy: "title",
+                inOrder: 1
+            }
+        ]
+
+        const filters = { genders, categories, brands, discount, sortBy, query }
+
+
+        const result = { productList, totalProducts, totalPages, page, filters }
+        return success(res, 200, true, "Product get successfully!", result)
+    } catch (_) {
+        console.log(_)
+        return unSuccess(res, 500, true, _.message)
+    }
+}
+
+
+
+
+
+module.exports = { create, viewOne, viewAll, update, remove }

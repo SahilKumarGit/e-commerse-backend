@@ -79,10 +79,11 @@ const create = async (req, res) => {
 
 
         // create empty cart 
-        await cartModel.create({ userId: create._id.toString() })
+        await cartModel.create({ userId: String(create._id) })
 
         res.status(201).send({ status: true, login: false, message: 'Account create successfully', create })
     } catch (e) {
+        console.log('⚠️',e.message)
         return unSuccess(res, 500, false, e.message)
     }
 }

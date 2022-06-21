@@ -26,6 +26,7 @@ router.delete('/comment/delete',authentication,authrization,comment.deletecommen
 
 // product API routers
 router.get('/product/:productId', product.viewOne)
+router.get('/product', product.viewAll)
 
 //cart api
 router.put('/cart/Addtocart',authentication,authrization,cart.cartUpdate)
