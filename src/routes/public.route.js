@@ -3,6 +3,7 @@ const user = require('./../controllers/users/user.controller')
 const product = require('./../controllers/product/product.controller')
 const comment = require('../controllers/comment/comment.Controller')
 const cart = require('../controllers/cart/cart.Controller')
+const wishList = require('../controllers/wishList/wishList.Controller')
 const { authentication, authrization } = require('../middleware/public/auth.middleware')
 const router = express.Router()
 
@@ -34,6 +35,10 @@ router.put('/cart/removeFromcart',authentication,authrization,cart.removeIteminc
 router.get('/cart/Mycart',authentication,authrization,cart.viewCart)
 router.delete('/cart/deleteMycart',authentication,authrization,cart.deleteCart)
 
+//wishList api
+router.post('/wishList/AddtowishList',authentication,authrization,wishList.createList)
+router.get('/wishList/ViewwishList',authentication,authrization,wishList.viewList)
+router.delete('/wishList/removeitemwishList',authentication,authrization,wishList.removeItem)
 
 
 
