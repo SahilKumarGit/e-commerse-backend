@@ -85,7 +85,7 @@ const create = async (req, res) => {
 
         res.status(201).send({ status: true, login: false, message: 'Account create successfully', create })
     } catch (e) {
-        console.log('⚠️',e.message)
+        console.log('⚠️', e.message)
         return unSuccess(res, 500, false, e.message)
     }
 }
@@ -217,12 +217,21 @@ const getUser = async (req, res) => {
             email: user.email,
             emailVerified: user.emailVerified,
             phone: user.phone,
-            password: user.password,
             gender: user.gender,
+            cart: 0,
+            wishList: 0,
             isDeleted: user.isDeleted,
             deletedAt: user.deletedAt,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
+        }
+
+
+        // get user cart Item count
+        const cart = await cartModel.findOne({ userId: user._id }).catch(e => null)
+        if (cart) {
+            // console.log(cart)
+            Obj.cart = cart.items.length
         }
 
         return success(res, 200, true, 'Profile found', Obj)
@@ -268,15 +277,15 @@ const updateUser = async (req, res) => {
         if (!emptyString(firstName)) user.firstName = firstName
         if (!emptyString(lastName)) user.lastName = lastName
         if (!emptyString(email)) {
-            if (invalidEmail(email)) return unSuccess(res, 400, false, 'Invalid email address!')
+            if (invalidEmail(email)) return unSuccess(res, 400, true, 'Invalid email address!')
             user.email = email
         }
         if (!emptyString(phone)) {
-            if (invalidPhone(phone)) return unSuccess(res, 400, false, 'Invalid phone number!')
+            if (invalidPhone(phone)) return unSuccess(res, 400, true, 'Invalid phone number!')
             user.phone = phone
         }
         if (!emptyString(gender)) {
-            if (!["male", "female"].includes(gender)) return unSuccess(res, 400, false, 'Select gender only accept \'male\' or \'frmalr\'!')
+            if (!["male", "female"].includes(gender)) return unSuccess(res, 400, true, 'Select gender only accept \'male\' or \'frmalr\'!')
             user.gender = gender
         }
 
@@ -284,8 +293,8 @@ const updateUser = async (req, res) => {
         // it check both email and phone number are exist or not
         let userCheck = await usersModel.find({ _id: { $ne: tokenData.userId }, $or: [{ phone: phone }, { email: email }] })
         for (let each of userCheck) {
-            if (each.email == email) return unSuccess(res, 400, false, 'Email address is already exist!')
-            if (each.phone == phone) return unSuccess(res, 400, false, 'Phone number is already exist!')
+            if (each.email == email) return unSuccess(res, 400, true, 'Email address is already exist!')
+            if (each.phone == phone) return unSuccess(res, 400, true, 'Phone number is already exist!')
         }
 
         await user.save();
@@ -297,7 +306,6 @@ const updateUser = async (req, res) => {
             email: user.email,
             emailVerified: user.emailVerified,
             phone: user.phone,
-            password: user.password,
             gender: user.gender,
             isDeleted: user.isDeleted,
             deletedAt: user.deletedAt,

@@ -2,6 +2,7 @@ const commentModel = require('../../models/comment.model')
 const { emptyObject, emptyString, emptyNumber, invalidObjectId, isValidRequestBody } = require("../../utility/validations");
 const { unSuccess, success } = require("../../utility/response");
 const productModel = require('./../../models/product.model');
+const { isLogined } = require('../../utility/isLogined');
 
 
 const create = async (req, res) => {
@@ -17,7 +18,7 @@ const create = async (req, res) => {
         if (emptyNumber(rating)) return unSuccess(res, 400, true, 'rating is required!')
         if (![1, 2, 3, 4, 5].includes(rating)) return unSuccess(res, 400, true, 'rating is 1 to 5 numbers only !')
         if (emptyString(message)) return unSuccess(res, 400, true, 'comment is required!')
-        if (!message.match(/^[a-zA-Z0-9\s]+$/)) return unSuccess(res, 400, true, 'comment is not valid!')
+        // if (!message.match(/^[a-zA-Z0-9\s]+$/)) return unSuccess(res, 400, true, 'comment is not valid!')
 
         // product verify
         let product = await productModel.findOne({ _id: productId, isDeleted: false })
@@ -29,7 +30,52 @@ const create = async (req, res) => {
         //create comment 
         let result = await commentModel.create(data)
         return success(res, 201, true, "comment created", result)
-        
+
+    } catch (e) {
+        console.log(e)
+        return unSuccess(res, 500, true, e.message)
+    }
+}
+
+// update comment API
+const view = async (req, res) => {
+    try {
+        let data = req.query
+        let productId = req.params.productId
+        let token = req.headers['x-auth-key'];
+
+        let page = 1
+        let row = 20
+        let queryObj = { isDeleted: false, productId: productId }
+        let sortObj = { createdAt: -1 }
+
+        let isLogin = false;
+        let mycomments = {}
+
+
+        if (!emptyString(data.page) && Number(data.page) >= 1) page = data.page
+        const login = await isLogined(token)
+        // console.log(login)
+        if (login) {
+            isLogin = true
+            queryObj.userId = login._id
+            mycomments = await commentModel.findOne(queryObj).select({ isDeleted: 0, deletedAt: 0, __v: 0, updatedAt: 0 })
+            queryObj.userId = { $ne: login._id }
+        }
+
+        // call DB here
+        const comments = await commentModel.find(queryObj).populate({ path: 'userId', select: ['firstName', 'lastName'] }).sort(sortObj)
+            .select({ isDeleted: 0, deletedAt: 0, __v: 0, updatedAt: 0 })
+            .skip((page - 1) * row)
+            .limit(row)
+
+
+        const totalProducts = await commentModel.count(queryObj)
+        const totalPages = Math.ceil(totalProducts / row)
+
+        const result = { totalProducts, totalPages, page, comments, mycomments }
+        return success(res, 200, isLogin, "comment update", result)
+
     } catch (e) {
         console.log(e)
         return unSuccess(res, 500, true, e.message)
@@ -104,6 +150,7 @@ const deletecomment = async (req, res) => {
 
 module.exports = {
     create,
+    view,
     update,
     deletecomment
 }

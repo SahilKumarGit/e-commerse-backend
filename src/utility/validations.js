@@ -2,6 +2,7 @@ const mongoose = require("mongoose")
 
 const emptyString = (val) => {
     if (!val) return true
+    if (typeof val != 'string') return true
     if (!val.trim()) return true
     return false
 }

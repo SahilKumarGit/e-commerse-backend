@@ -3,6 +3,7 @@ const { unSuccess, success } = require("../../utility/response");
 const { emptyObject, emptyString, emptyNumber, invalidEmail, invalidPassword, invalidPincode, invalidPhone, invalidObjectId, emptyArray, notExistInArray } = require("../../utility/validations");
 const mth = require('../../utility/math');
 const productModel = require("../../models/product.model");
+const { default: mongoose } = require('mongoose');
 
 // ⬇️ create product ---------------------------------------
 
@@ -186,7 +187,7 @@ const viewOne = async (req, res) => {
         let ratingRawArray = await commentModel.aggregate([
             {
                 "$match": {
-                    "productId": productId,
+                    "productId": new mongoose.Types.ObjectId(productId),
                     "rating": { "$in": [1, 2, 3, 4, 5] },
                     "isDeleted": false
                 }
@@ -198,6 +199,8 @@ const viewOne = async (req, res) => {
                 }
             }
         ])
+
+        // console.log(ratingRawArray)
 
         // convert array to object
         for (let each of ratingRawArray) {
@@ -214,7 +217,10 @@ const viewOne = async (req, res) => {
         let RATING_FINAL = { PEOPLE: ratingObj, AVRAGE, TOTAL_PEOPLE }
 
         // get 10 cpmments --------------------------------------------------------
-        const comments = await commentModel.find({ "productId": productId, "isDeleted": false }).limit(10)
+        const comments = await commentModel.find({ "productId": productId, "isDeleted": false })
+            .populate({ path: 'userId', select: ['firstName', 'lastName'] })
+            .sort({ createdAt: -1 })
+            .limit(10)
 
         // arrange the products...................................................
         let FINAL_PRODUCT = {
@@ -261,6 +267,7 @@ const viewAll = async (req, res) => {
 
         if (!emptyObject(query)) {
             if (!emptyString(query.page)) page = Number(query.page)
+            if (page <= 0) return unSuccess(res, 400, true, "Can't read the page number")
             if (!emptyString(query.row)) row = Number(query.row)
             if (!emptyString(query.filter)) queryObj.filter = query.filter
             if (query.categories) queryObj.category = { $in: query.categories }

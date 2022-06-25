@@ -22,6 +22,7 @@ router.get('/verify/:key', user.verifyEmail)
 
 // comment API routers
 router.post('/comment/create',authentication,authrization, comment.create)
+router.get('/comment/:productId', comment.view)
 router.put('/comment/update', authentication,authrization,comment.update)
 router.delete('/comment/delete',authentication,authrization,comment.deletecomment)
 
