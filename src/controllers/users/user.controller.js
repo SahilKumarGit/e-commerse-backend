@@ -32,7 +32,7 @@ const create = async (req, res) => {
         if (emptyString(phone)) return unSuccess(res, 400, false, 'Phone number is required!')
         if (emptyString(password)) return unSuccess(res, 400, false, 'Password is required!')
         if (emptyString(gender)) return unSuccess(res, 400, false, 'Select gender!')
-        if (!["male", "female"].includes(gender)) return unSuccess(res, 400, false, 'Select gender only accept \'male\' or \'frmalr\'!')
+        if (!["male", "female", "others"].includes(gender)) return unSuccess(res, 400, false, 'Select gender only accept \'male\' or \'frmalr\'!')
 
         // regex validation
         if (invalidEmail(email))
@@ -285,7 +285,7 @@ const updateUser = async (req, res) => {
             user.phone = phone
         }
         if (!emptyString(gender)) {
-            if (!["male", "female"].includes(gender)) return unSuccess(res, 400, true, 'Select gender only accept \'male\' or \'frmalr\'!')
+            if (!["male", "female", "others"].includes(gender)) return unSuccess(res, 400, true, 'Select gender only accept \'male\' or \'frmalr\'!')
             user.gender = gender
         }
 
@@ -356,5 +356,44 @@ const updateAddress = async (req, res) => {
     }
 }
 
+//🔐change password
+const changepassword = async (req, res) => {
+    try {
+        let data = req.body
+        //let userId = req.tokenData.userId
+        let userdata = req.user
+        let { oldPassword, newPassword } = data
+        if (!oldPassword) return unSuccess(res, 400, true, 'Enter your old Paswword')
+        if (!newPassword) return unSuccess(res, 400, true, 'Enter your new Paswword')
+        if (invalidPassword(newPassword))
+            return unSuccess(res, 400, true, 'Invalid password (please note that password only accept a-z,A-Z,0-1 and !@#$%^&*)!')
 
-module.exports = { create, login, verifyEmail, getUser, address, updateUser, updateAddress }
+        // password compaired 
+        const verify = await bcrypt.compare(oldPassword, userdata.password).catch(_ => {
+            console.log(_.message)
+            return false
+        });
+        if (!verify) return unSuccess(res, 401, true, 'Wrong password!')
+
+        // password hashing
+        const encryptedPassword = await bcrypt.hash(newPassword, saltRounds)
+
+        //password updating
+        //let update = await userModel.findOneAndUpdate({ userId }, { $set: { password: encryptedPassword } })
+        userdata.password = encryptedPassword
+        await userdata.save();
+        return success(res, 200, true, 'Password updated', {})
+    }
+    catch (e) {
+        console.log(e)
+        return unSuccess(res, 500, true, e.message)
+    }
+}
+
+
+
+
+
+
+
+module.exports = { create, login, verifyEmail, getUser, address, updateUser, updateAddress, changepassword }
