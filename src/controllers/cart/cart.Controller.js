@@ -6,7 +6,60 @@ const allSizes = ["3XS", "XXS", "XS", "XS/S", "S", "M", "L", "XL", "XL/XXL", "XX
 
 
 
+// update cart🛒🛒
+const addToCart = async (req, res) => {
+    try {
+        let data = req.body
+        if (emptyObject(data)) return unSuccess(res, 400, true, 'Body is required!!')
+        let { productId, size, quantity } = data
+        let userId = req.tokenData.userId
+        size = size.toUpperCase()
+        quantity = quantity || 1 // default quantity
 
+        // basic validations
+        if (emptyString(productId)) return unSuccess(res, 400, true, 'ProductId required!')
+        if (invalidObjectId(productId)) return unSuccess(res, 400, true, 'enter valid productId!')
+        if (emptyString(size)) return unSuccess(res, 400, true, 'size required!')
+        if (!allSizes.includes(size)) return unSuccess(res, 400, true, 'enter valid size')
+        if (emptyNumber(quantity)) return unSuccess(res, 400, true, 'quantity required!')
+        if (quantity < 0 || quantity > 10) return unSuccess(res, 400, true, 'maximum quantity exid!')
+
+
+        //db call for product
+        let product = await productModel.findOne({ _id: productId, isDeleted: false })
+        if (!product) return unSuccess(res, 404, true, 'product not found enter valid product Id!')
+        if (product.size_and_inventory[size] < quantity) return unSuccess(res, 404, true, `Can't add because we have only ${product.size_and_inventory[size]} stocks avalable!`)
+
+        let cart = await cartModel.findOne({ userId: userId }).populate("items.product", { 'isDeleted': 1, 'brandName': 1, 'category': 1, 'images': 1, 'price': 1, 'title': 1, 'size_and_inventory': 1, '_id': 1 })
+        if (!cart) return unSuccess(res, 404, true, 'cart not found enter valid cart Id!')
+        if (cart.items >= 20) return unSuccess(res, 404, true, 'Your cart is full, Please remove some items first!')
+
+        //db call for cart
+        for (let each of cart.items) {
+            if (productId == String(each.product._id) && size == each.size) {
+                if (each.quantity >= 10) return unSuccess(res, 400, true, 'maximum quantity exid!')
+                if (each.quantity >= product.size_and_inventory[size]) return unSuccess(res, 400, true, `You can't add more then ${product.size_and_inventory[size]}`)
+                each.quantity = each.quantity + quantity
+                await cart.save()
+                const outView = { totalItems: cart.items.length }
+                return success(res, 200, true, "Quantity add tocart!", outView)
+            }
+        }
+
+        pushData = { product: productId, quantity: quantity, size: size }
+        cart.items.push(pushData)
+
+        // generete item Clone here
+        const ItemsClone = JSON.parse(JSON.stringify(cart.items))
+        await cart.save()
+        const outView = { totalItems: ItemsClone.length }
+        return success(res, 201, true, "New product added to cart!", outView)
+    }
+    catch (e) {
+        console.log(e)
+        return unSuccess(res, 500, true, e.message)
+    }
+}
 
 
 
@@ -34,13 +87,14 @@ const cartUpdate = async (req, res) => {
         if (!product) return unSuccess(res, 404, true, 'product not found enter valid product Id!')
         if (product.size_and_inventory[size] < quantity) return unSuccess(res, 404, true, `Can't add because we have only ${product.size_and_inventory[size]} stocks avalable!`)
 
-        let cart = await cartModel.findOne({ userId: userId }).populate("items.product")
+        let cart = await cartModel.findOne({ userId: userId }).populate("items.product", { 'isDeleted': 1, 'brandName': 1, 'category': 1, 'images': 1, 'price': 1, 'title': 1, 'size_and_inventory': 1, '_id': 1 })
         if (!cart) return unSuccess(res, 404, true, 'cart not found enter valid cart Id!')
         if (cart.items >= 20) return unSuccess(res, 404, true, 'Your cart is full, Please remove some items first!')
 
         //db call for cart
         for (let each of cart.items) {
             if (productId == String(each.product._id) && size == each.size) {
+                if (quantity > product.size_and_inventory[size]) return unSuccess(res, 400, true, `You can't add more then ${product.size_and_inventory[size]}`)
                 each.quantity = quantity
                 await cart.save()
                 each.product = product
@@ -95,7 +149,7 @@ const removeItemincart = async (req, res) => {
 
 
         //db call for cart
-        let cart = await cartModel.findOne({ userId: userId }).populate("items.product")
+        let cart = await cartModel.findOne({ userId: userId }).populate("items.product", { 'isDeleted': 1, 'brandName': 1, 'category': 1, 'images': 1, 'price': 1, 'title': 1, 'size_and_inventory': 1, '_id': 1 })
         if (!cart) return unSuccess(res, 404, true, 'cart not found enter valid cart Id!')
         //db call for cart
         for (let i = 0; i < cart.items.length; i++) {
@@ -108,6 +162,7 @@ const removeItemincart = async (req, res) => {
                 return success(res, 200, true, "cart updated (item removed)", outView)
             }
         }
+        // console.log(cart.items.length)
         return unSuccess(res, 404, true, "Can't find the product in your cart!")
     }
     catch (e) {
@@ -129,7 +184,7 @@ const removeItemincart = async (req, res) => {
 const viewCart = async (req, res) => {
     try {
         let userId = req.tokenData.userId
-        let cart = await cartModel.findOne({ userId: userId }).populate("items.product")
+        let cart = await cartModel.findOne({ userId: userId }).populate("items.product", { 'isDeleted': 1, 'brandName': 1, 'category': 1, 'images': 1, 'price': 1, 'title': 1, 'size_and_inventory': 1, '_id': 1 })
         if (!cart) return unSuccess(res, 404, true, 'cart not found enter valid cart Id!')
 
         // calculation Part ------------------------------------
@@ -203,7 +258,7 @@ const CalculateTotal = (items = []) => {
 
 
 
-module.exports = { cartUpdate, removeItemincart, viewCart, deleteCart }
+module.exports = { addToCart, cartUpdate, removeItemincart, viewCart, deleteCart }
 
 
 

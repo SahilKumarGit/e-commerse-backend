@@ -32,10 +32,11 @@ router.get('/product/:productId', product.viewOne)
 router.get('/product', product.viewAll)
 
 //cart api
-router.put('/cart/Addtocart', authentication, authrization, cart.cartUpdate)
+router.put('/cart/addToCart', authentication, authrization, cart.addToCart)
+router.put('/cart/updateCart', authentication, authrization, cart.cartUpdate)
 router.put('/cart/removeFromcart', authentication, authrization, cart.removeItemincart)
-router.get('/cart/Mycart', authentication, authrization, cart.viewCart)
-router.delete('/cart/deleteMycart', authentication, authrization, cart.deleteCart)
+router.get('/cart/myCart', authentication, authrization, cart.viewCart)
+router.delete('/cart/deleteMyCart', authentication, authrization, cart.deleteCart)
 
 //wishList api
 router.post('/wishList/AddtowishList', authentication, authrization, wishList.createList)

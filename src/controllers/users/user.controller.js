@@ -349,7 +349,7 @@ const updateAddress = async (req, res) => {
         }
 
         await user.save();
-        return success(res, 200, true, 'Profile found', ADS)
+        return success(res, 200, true, 'Address updated', ADS)
 
     } catch (e) {
         return unSuccess(res, 500, true, e.message)
