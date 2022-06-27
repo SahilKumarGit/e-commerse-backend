@@ -270,8 +270,17 @@ const viewAll = async (req, res) => {
             if (page <= 0) return unSuccess(res, 400, true, "Can't read the page number")
             if (!emptyString(query.row)) row = Number(query.row)
             if (!emptyString(query.filter)) queryObj.filter = query.filter
-            if (query.categories) queryObj.category = { $in: query.categories }
-            if (query.brands) queryObj.brandName = { $in: query.brands }
+
+            if (query.categories) {
+                if (Array.isArray(query.categories)) queryObj.category = { $in: query.categories }
+                else queryObj.category = { $in: [query.categories] }
+            }
+
+            if (query.brands) {
+                if (Array.isArray(query.brands)) queryObj.brandName = { $in: query.brands }
+                else queryObj.brandName = { $in: [query.brands] }
+            }
+
             if (query.discount) queryObj["price.discount"] = { $gte: query.discount }
             if (!emptyString(query.sortBy) && !emptyString(query.inOrder)) sortObj[query.sortBy] = Number(query.inOrder)
         }
@@ -293,6 +302,31 @@ const viewAll = async (req, res) => {
         let querySelect = { isDeleted: false }
         if (queryObj.filter) querySelect.filter = queryObj.filter
 
+
+        /*⚠️ ALERT ----------------------------------------------------------------------------------
+        1. Position matters DONT CHANGE CATEGORIES AGGRIGATER POSITION (IT'S ALWS AVOBE OF BRANDS)
+        ----------------------------------------------------------------------------------------------*/
+        const categories = await productModel.aggregate([
+            { "$match": querySelect },
+            {
+                "$group": {
+                    "_id": "$category", "count": { "$sum": 1 }
+                }
+            },
+            { "$sort": { "_id": 1 } }
+        ])
+
+
+        /*⚠️ ALERT -----------------------------------------------------------------------------------------------------------
+        2. Position matters DONT CHANGE THE POSITION OF THE CONDITION (IT'S ALWS AVOBE OF BRANDS AND BELOW THE CATEGORIES)
+        -----------------------------------------------------------------------------------------------------------------------*/
+        if (queryObj.category) querySelect.category = queryObj.category
+        // console.log(queryObj)
+
+
+        /*⚠️ ALERT -----------------------------------------------------------------------------------------------------
+        3. Position matters DONT CHANGE BRANDS AGGRIGATER POSITION (IT'S ALWS BELOW OF CATEGORIES AND THE CONDITION)
+        -----------------------------------------------------------------------------------------------------------------*/
         const brands = await productModel.aggregate([
             { "$match": querySelect },
             {
@@ -303,15 +337,7 @@ const viewAll = async (req, res) => {
             { "$sort": { "_id": 1 } }
         ])
 
-        const categories = await productModel.aggregate([
-            { "$match": querySelect },
-            {
-                "$group": {
-                    "_id": "$category", "count": { "$sum": 1 }
-                }
-            },
-            { "$sort": { "_id": 1 } }
-        ])
+
 
         const discount = [10, 20, 30, 40, 50, 60, 70, 80]
         const genders = ["men", "women", "boys", "girls"]
