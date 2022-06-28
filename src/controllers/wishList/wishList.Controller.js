@@ -15,15 +15,21 @@ const createList = async (req, res) => {
         let list = await wishModel.findOne({ userId: userId })
         if (list) {
             let items = list.items
-            for (let i of items) {
-                if (productId === i.product.toString()) {
-                    return unSuccess(res, 200, true, 'product already in wishList')
+
+            // if item list exid
+            if (items.length >= 20) return unSuccess(res, 400, true, 'You can only add 20 items to your wishlist!')
+
+            for (let each of items) {
+                if (productId === each.product.toString()) {
+                    return unSuccess(res, 200, true, 'Product already exist in your wishlist!')
                 }
             }
+
             items.push({ product: productId })
             await list.save();
-            return success(res, 201, true, "new product added to wishlist", list)
+            return success(res, 201, true, "This product added to your wishlist", { totalWishlist: list.items.length })
         }
+        // here is it need a age case for line no 15?
     }
     catch (e) {
         console.log(e)
@@ -35,11 +41,8 @@ const createList = async (req, res) => {
 const viewList = async (req, res) => {
     try {
         let userId = req.tokenData.userId
-        let list = await wishModel.findOne({ userId: userId }).populate({ path: 'items.product' })//,select:['title','price','productImage']
-        if (list.items.length == 0) {
-            return unSuccess(res, 404, true, 'wishList empty')
-        }
-        return success(res, 201, true, "wishlist", list)
+        let list = await wishModel.findOne({ userId: userId }).populate({ path: 'items.product', select: ['_id', 'title', 'size_and_inventory', 'shortDescription', 'price', 'images', 'category', 'brandName'] }).select({ "items._id": 0 })
+        return success(res, 200, true, "wishlist", list)
     }
     catch (e) {
         console.log(e)
@@ -55,15 +58,15 @@ const removeItem = async (req, res) => {
         let { productId } = data
         if (emptyString(productId)) return unSuccess(res, 400, true, 'ProductId required!')
         if (invalidObjectId(productId)) return unSuccess(res, 400, true, 'enter valid productId!')
-        let list = await wishModel.findOne({ userId: userId })
+        let list = await wishModel.findOne({ userId: userId }).populate({ path: 'items.product', select: ['_id', 'title', 'size_and_inventory', 'shortDescription', 'price', 'images', 'category', 'brandName'] }).select({ "items._id": 0 })
         let items = list.items
         items.forEach((e, i) => {
-            if (productId == e.product.toString()) {
+            if (productId == e.product._id.toString()) {
                 items.splice(i, 1)
             }
         })
         await list.save()
-        return success(res, 201, true, "wishlist", list)
+        return success(res, 200, true, "Item removed from wishlist!", list)
     }
     catch (e) {
 
