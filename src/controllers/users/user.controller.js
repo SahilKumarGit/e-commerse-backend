@@ -1,6 +1,6 @@
 const { unSuccess, success } = require("../../utility/response");
 const usersModel = require('../../models/user.model')
-const { emptyObject, emptyString, emptyNumber, invalidEmail, invalidPassword, invalidPincode, invalidPhone, invalidObjectId } = require("../../utility/validations");
+const { emptyObject, emptyString, emptyNumber, invalidEmail, invalidPassword, invalidPincode, invalidPhone, invalidObjectId, invalidURL } = require("../../utility/validations");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const short = require('short-uuid');
@@ -391,9 +391,56 @@ const changepassword = async (req, res) => {
 }
 
 
+const forgetPassword = async (req, res) => {
+    try {
+
+        const data = req.body
+        if (emptyObject(data)) return unSuccess(res, 400, false, 'POST body is required!')
+        const { email, callback } = data
+        if (emptyString(email)) return unSuccess(res, 400, false, 'email is required!')
+        if (emptyString(callback)) return unSuccess(res, 400, false, 'callback is required!')
+        // if (invalidURL(callback)) return unSuccess(res, 400, false, 'callback must be an url!')
+
+        // DB call for checking email exist or not
+        const user = await userModel.findOne({ email: email, isDeleted: false })
+        if (!user) return unSuccess(res, 400, false, 'User not found!')
+
+        // generate key for vfy and store it in redis
+        let resetUID = 'forget-' + short.generate() + '-' + new Date().getTime();
+        await client.setEx(resetUID, 600, user._id.toString());  // 600 sec or 10 min
+
+        // generate url for verify email http://localhost:3000/public/verify/vfy-sdfg-ds34
+        let vfyUrl = `${callback}?i=${resetUID}`
+        let html = `
+             <p>Hello ${user.firstName},</p>
+             <p>We receive a request to reset the password for your account.</p>
+             <p>To reset your password click the link given bellow.</p>
+             <a href="${vfyUrl}" target="_blank">Reset Password</a>
+         `;
+
+        // send email here
+        await sendMail("Email Verification - No Reply", user.email, "Email Verification", html);
+        return success(res, 200, false, 'Reset request send to your email address!', {})
+
+    } catch (e) {
+        console.log(e)
+        return unSuccess(res, 500, false, e.message)
+    }
+}
+
+
+
+const resetPassword = async (req, res) => {
+    try {
+
+       
+    } catch (e) {
+        console.log(e)
+        return unSuccess(res, 500, false, e.message)
+    }
+}
 
 
 
 
-
-module.exports = { create, login, verifyEmail, getUser, address, updateUser, updateAddress, changepassword }
+module.exports = { create, login, verifyEmail, getUser, address, updateUser, updateAddress, changepassword, forgetPassword, resetPassword }

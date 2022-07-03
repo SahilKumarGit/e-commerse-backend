@@ -38,6 +38,11 @@ let invalidPassword = function (password) {
     return !passwordRegex.test(password)
 }
 
+let invalidURL = function (val) {
+    let rejx = /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/
+    return !rejx.test(val)
+}
+
 let invalidPhone = function (number) {
     let phoneRegex = /^[6-9]\d{9}$/;
     return !phoneRegex.test(number);
@@ -75,6 +80,7 @@ module.exports = {
     emptyArray,
     emptyObject,
     invalidEmail,
+    invalidURL,
     invalidPassword,
     invalidPhone,
     invalidPincode,
