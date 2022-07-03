@@ -432,8 +432,33 @@ const forgetPassword = async (req, res) => {
 
 const resetPassword = async (req, res) => {
     try {
+        //from frnt end milega key passwrd and pswrd again
+        let data = req.body
+        let { key, password1, password2 } = data
 
-       
+        const value = await client.get(key)
+        if (!value) return unSuccess(res, 400, false, "Invalid token")
+        if (!password1 || !password2)
+            return unSuccess(res, 400, false, "Enter password")
+        if (password1 !== password2)
+            return unSuccess(res, 400, false, "passwords do not match")
+        if (invalidPassword(password2))
+            return unSuccess(res, 400, false, 'Invalid password (please note that password only accept a-z,A-Z,0-1 and !@#$%^&*)!')
+
+        //hasing password    
+        const encryptedPassword = await bcrypt.hash(password2, saltRounds)
+
+        let userdata = await userModel.findOneAndUpdate({ _id: value, isDeleted: false }, { $set: { password: encryptedPassword } })
+        if (!userdata)
+            return unSuccess(res, 404, false, "User not found or their has been some mistake try again later")
+
+        // if (encryptedPassword)
+        //     userdata.password = encryptedPassword
+
+        // //db call to save updated paswrd    
+        // await userdata.save();
+        return success(res, 200, false, 'Password updated', {})
+
     } catch (e) {
         console.log(e)
         return unSuccess(res, 500, false, e.message)
