@@ -18,6 +18,7 @@ router.put('/user/profile', authentication, authrization, user.updateUser)
 router.put('/user/address', authentication, authrization, user.updateAddress)
 router.put('/user/changepassword', authentication, authrization, user.changepassword)
 router.post('/user/forgetpassword', user.forgetPassword)
+router.post('/user/resetpassword', user.resetPassword)
 
 // email verify
 router.get('/verify/:key', user.verifyEmail)

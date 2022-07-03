@@ -408,6 +408,7 @@ const forgetPassword = async (req, res) => {
         // generate key for vfy and store it in redis
         let resetUID = 'forget-' + short.generate() + '-' + new Date().getTime();
         await client.setEx(resetUID, 600, user._id.toString());  // 600 sec or 10 min
+        console.log(resetUID)
 
         // generate url for verify email http://localhost:3000/public/verify/vfy-sdfg-ds34
         let vfyUrl = `${callback}?i=${resetUID}`
@@ -437,11 +438,11 @@ const resetPassword = async (req, res) => {
         let { key, password1, password2 } = data
 
         const value = await client.get(key)
-        if (!value) return unSuccess(res, 400, false, "Invalid token")
+        if (!value) return unSuccess(res, 400, false, "Invalid Key")
         if (!password1 || !password2)
-            return unSuccess(res, 400, false, "Enter password")
+            return unSuccess(res, 400, false, "Password is required!")
         if (password1 !== password2)
-            return unSuccess(res, 400, false, "passwords do not match")
+            return unSuccess(res, 400, false, "Passwords do not match!")
         if (invalidPassword(password2))
             return unSuccess(res, 400, false, 'Invalid password (please note that password only accept a-z,A-Z,0-1 and !@#$%^&*)!')
 
@@ -452,11 +453,6 @@ const resetPassword = async (req, res) => {
         if (!userdata)
             return unSuccess(res, 404, false, "User not found or their has been some mistake try again later")
 
-        // if (encryptedPassword)
-        //     userdata.password = encryptedPassword
-
-        // //db call to save updated paswrd    
-        // await userdata.save();
         return success(res, 200, false, 'Password updated', {})
 
     } catch (e) {
