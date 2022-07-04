@@ -17,7 +17,7 @@ const cartSchema = new mongoose.Schema({
             required: true,
             enum: ['UNPAID', 'PAID', 'REFUND']
         },
-        orderId: {
+        paymentId: {
             type: String,
             default: null
         },
