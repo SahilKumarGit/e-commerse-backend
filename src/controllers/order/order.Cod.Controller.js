@@ -3,6 +3,7 @@ const productModel = require("../../models/product.model");
 const allSizes = ["3XS", "XXS", "XS", "XS/S", "S", "M", "L", "XL", "XL/XXL", "XXL", "3XL", "4XL", "5XL", "6XL", "7XL", "8XL", "9XL", "10XL", "11XL", "ONESIZE"]
 const cartModel = require('../../models/cart.Model');
 const orderModel = require("../../models/order.model");
+const { default: mongoose } = require("mongoose");
 
 
 
@@ -17,23 +18,47 @@ const orderCod = async (req, res) => {
 
         // creating items for order API
         let items = []
+        // create bolk for updating leter
+        let BulkUpdateObj = {}
+
         let total_mrp = 0, total = 0, delivery = 0;
         for (let each of cartData.items) {
-        console.log(each)
+            let productID = each.product._id.toString()
             if (each.product.size_and_inventory[each.size] < each.quantity) {
-                return unSuccess(res, 404, true, 'some of the Items you trying to order are out of stock !')
+                return unSuccess(res, 404, true, 'Some of the ttems you trying to order are out of stock!')
             }
 
             total_mrp += each.product.price.mrp * each.quantity
             total += each.product.price.total * each.quantity
             // console.log(total_mrp + "   " + total)
             items.push({
-                product: each.product._id.toString(),
+                product: productID,
                 price: each.product.price,
                 quantity: each.quantity,
                 size: each.size
             })
+
+            // push for bulk update for products
+            let $inc = {}
+            if (BulkUpdateObj[productID]) {
+                // set already existed data inside $inc
+                $inc = BulkUpdateObj[productID]['updateOne']['update']['$inc'];
+                // update current data quantity with key
+                $inc['size_and_inventory.' + each.size] = - each.quantity
+            } else {
+                $inc['size_and_inventory.' + each.size] = - each.quantity
+            }
+
+            BulkUpdateObj[productID] = {
+                updateOne: {
+                    "filter": { "_id": mongoose.Types.ObjectId(productID) },
+                    "update": { $inc }
+                }
+            }
+
         }
+
+
         let total_discount = total_mrp - total
         if (total < 500) {
             delivery = 49
@@ -53,9 +78,26 @@ const orderCod = async (req, res) => {
                 status: 'UNPAID'
             }
         }
+
+
+        // bulk updateobj conv to BulkUpdateArr
+        const bulkUpdateArr = []
+        for (let key in BulkUpdateObj) {
+            bulkUpdateArr.push(BulkUpdateObj[key])
+        }
+
+
         //Document creatation in db 
-        let result = await orderModel.create(obj)
-        return success(res, 201, true, 'Order created successfully', result)
+        await orderModel.create(obj)
+
+        // make the cart empty
+        cartData.items = []
+        await cartData.save();
+
+        // Update the product Quantity
+        await productModel.bulkWrite(bulkUpdateArr)
+
+        return success(res, 201, true, 'Order created successfully', {})
 
     }
     catch (e) {
