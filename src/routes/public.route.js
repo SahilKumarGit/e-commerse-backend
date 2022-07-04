@@ -4,6 +4,7 @@ const product = require('./../controllers/product/product.controller')
 const comment = require('../controllers/comment/comment.Controller')
 const cart = require('../controllers/cart/cart.Controller')
 const wishList = require('../controllers/wishList/wishList.Controller')
+const orderByCod=require('../controllers/order/order.Cod.Controller')
 const { authentication, authrization } = require('../middleware/public/auth.middleware')
 const router = express.Router()
 
@@ -44,6 +45,10 @@ router.delete('/cart/deleteMyCart', authentication, authrization, cart.deleteCar
 router.post('/wishList/AddtowishList', authentication, authrization, wishList.createList)
 router.get('/wishList/ViewwishList', authentication, authrization, wishList.viewList)
 router.delete('/wishList/removeitemwishList', authentication, authrization, wishList.removeItem)
+
+
+//order apis
+router.post('/order/byCod', authentication, authrization, orderByCod.orderCod)
 
 
 

@@ -46,7 +46,7 @@ const cartSchema = new mongoose.Schema({
             required: true,
             default: 0
         },
-        delevery: {
+        delivery: {
             type: Number,
             required: true,
             default: 0
