@@ -1,8 +1,8 @@
-const { unSuccess, success } = require("../../utility/response");
-const productModel = require("../../models/product.model");
+const { unSuccess, success } = require("../../../utility/response");
+const productModel = require("../../../models/product.model");
 const allSizes = ["3XS", "XXS", "XS", "XS/S", "S", "M", "L", "XL", "XL/XXL", "XXL", "3XL", "4XL", "5XL", "6XL", "7XL", "8XL", "9XL", "10XL", "11XL", "ONESIZE"]
-const cartModel = require('../../models/cart.Model');
-const orderModel = require("../../models/order.model");
+const cartModel = require('../../../models/cart.Model');
+const orderModel = require("../../../models/order.model");
 const { default: mongoose } = require("mongoose");
 
 

@@ -4,7 +4,7 @@ const product = require('./../controllers/product/product.controller')
 const comment = require('../controllers/comment/comment.Controller')
 const cart = require('../controllers/cart/cart.Controller')
 const wishList = require('../controllers/wishList/wishList.Controller')
-const orderByCod=require('../controllers/order/order.Cod.Controller')
+const orderByCod=require('../controllers/order/cod/order.Cod.Controller')
 const { authentication, authrization } = require('../middleware/public/auth.middleware')
 const router = express.Router()
 
