@@ -420,7 +420,7 @@ const forgetPassword = async (req, res) => {
          `;
 
         // send email here
-        await sendMail("Email Verification - No Reply", user.email, "Email Verification", html);
+        await sendMail("Reset Password - No Reply", user.email, "Reset Password", html);
         return success(res, 200, false, 'Reset request send to your email address!', {})
 
     } catch (e) {
