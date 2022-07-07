@@ -5,6 +5,7 @@ const comment = require('../controllers/comment/comment.Controller')
 const cart = require('../controllers/cart/cart.Controller')
 const wishList = require('../controllers/wishList/wishList.Controller')
 const orderByCod=require('../controllers/order/cod/order.Cod.Controller')
+const orders=require('../controllers/order/orderList.controller')
 const { authentication, authrization } = require('../middleware/public/auth.middleware')
 const { createPaymentEnv } = require('../controllers/order/using_paytm/initializePayment.controller')
 const router = express.Router()
@@ -47,6 +48,8 @@ router.post('/wishList/AddtowishList', authentication, authrization, wishList.cr
 router.get('/wishList/ViewwishList', authentication, authrization, wishList.viewList)
 router.delete('/wishList/removeitemwishList', authentication, authrization, wishList.removeItem)
 
+//order api to show all orders
+router.get('/order', authentication, authrization, orders.orderList)
 
 //order apis cod
 router.post('/order/byCod', authentication, authrization, orderByCod.orderCod)
