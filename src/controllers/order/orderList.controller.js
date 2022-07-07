@@ -34,4 +34,14 @@ const orderList = async (req, res) => {
     }
 }
 
+
+
+
+/**
+ * You receive order id from path params
+ * populate all items return
+ * the end
+ */
+
+
 module.exports = { orderList }
