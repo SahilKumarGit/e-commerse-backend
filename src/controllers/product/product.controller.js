@@ -263,13 +263,16 @@ const viewAll = async (req, res) => {
         const sortObj = { createdAt: -1 }
 
         let page = 1
-        let row = 40
+        let row = 25
+        let search = null;
 
         if (!emptyObject(query)) {
             if (!emptyString(query.page)) page = Number(query.page)
             if (page <= 0) return unSuccess(res, 400, true, "Can't read the page number")
             if (!emptyString(query.row)) row = Number(query.row)
             if (!emptyString(query.filter)) queryObj.filter = query.filter
+            if (!emptyString(query.search)) search = query.search
+
 
             if (query.categories) {
                 if (Array.isArray(query.categories)) queryObj.category = { $in: query.categories }
@@ -292,33 +295,85 @@ const viewAll = async (req, res) => {
         // console.log(queryObj)
         // console.log(sortObj)
 
-        // call DB here
-        const productList = await productModel.find(queryObj).sort(sortObj)
-            .select({ admin: 0, size_and_inventory: 0, size_fit: 0, material_care: 0, specification: 0, isDeleted: 0, deletedAt: 0, __v: 0, createdAt: 0, updatedAt: 0 })
-            .skip((page - 1) * row)
-            .limit(row)
+        // aggrigate_Seratch 
+        const aggregateSearch = {
+            index: 'title_search',
+            autocomplete: {
+                query: search,
+                path: 'title',
+                fuzzy: {
+                    maxEdits: 1
+                }
+            }
+        }
 
-        const totalProducts = await productModel.count(queryObj)
-        const totalPages = Math.ceil(totalProducts / row)
+        // call DB here
+        // here is rhe product list DB call
+        let productList;
+
+        if (!search) {
+
+            productList = await productModel.find(queryObj).sort(sortObj)
+                .select({ admin: 0, size_fit: 0, material_care: 0, specification: 0, isDeleted: 0, deletedAt: 0, __v: 0, createdAt: 0, updatedAt: 0 })
+                .skip((page - 1) * row)
+                .limit(row)
+
+        } else {
+
+            const aggre = [
+                { $search: aggregateSearch },
+                { $match: queryObj },
+                { $sort: sortObj },
+                { $skip: (page - 1) * row },
+                { $limit: row },
+                { $project: { admin: 0, size_fit: 0, material_care: 0, specification: 0, isDeleted: 0, deletedAt: 0, __v: 0, createdAt: 0, updatedAt: 0 } }
+            ]
+
+            /***
+             * I got a glitch when I trying to make my documents as pagination format.
+             * It never work if I add this.Limit first, then the skip.
+             * So never use limit before skip.
+            */
+
+            productList = await productModel.aggregate(aggre)
+
+        }
 
         // categories and more
         let querySelect = { isDeleted: false }
         if (queryObj.filter) querySelect.filter = queryObj.filter
 
+        let aggrigate = {
+            brand: [
+                { "$match": querySelect },
+                {
+                    "$group": {
+                        "_id": "$brandName", "count": { "$sum": 1 }
+                    }
+                },
+                { "$sort": { "_id": 1 } }
+            ],
+            category: [
+                { "$match": querySelect },
+                {
+                    "$group": {
+                        "_id": "$category", "count": { "$sum": 1 }
+                    }
+                },
+                { "$sort": { "_id": 1 } }
+            ]
+        }
+
+        if (search) {
+            aggrigate.brand.unshift({ $search: aggregateSearch })
+            aggrigate.category.unshift({ $search: aggregateSearch })
+        }
 
         /*⚠️ ALERT ----------------------------------------------------------------------------------
         1. Position matters DONT CHANGE CATEGORIES AGGRIGATER POSITION (IT'S ALWS AVOBE OF BRANDS)
         ----------------------------------------------------------------------------------------------*/
-        const categories = await productModel.aggregate([
-            { "$match": querySelect },
-            {
-                "$group": {
-                    "_id": "$category", "count": { "$sum": 1 }
-                }
-            },
-            { "$sort": { "_id": 1 } }
-        ])
-
+        const categories = await productModel.aggregate(aggrigate.category)
+        // console.log(categories)
 
         /*⚠️ ALERT -----------------------------------------------------------------------------------------------------------
         2. Position matters DONT CHANGE THE POSITION OF THE CONDITION (IT'S ALWS AVOBE OF BRANDS AND BELOW THE CATEGORIES)
@@ -330,15 +385,13 @@ const viewAll = async (req, res) => {
         /*⚠️ ALERT -----------------------------------------------------------------------------------------------------
         3. Position matters DONT CHANGE BRANDS AGGRIGATER POSITION (IT'S ALWS BELOW OF CATEGORIES AND THE CONDITION)
         -----------------------------------------------------------------------------------------------------------------*/
-        const brands = await productModel.aggregate([
-            { "$match": querySelect },
-            {
-                "$group": {
-                    "_id": "$brandName", "count": { "$sum": 1 }
-                }
-            },
-            { "$sort": { "_id": 1 } }
-        ])
+        const brands = await productModel.aggregate(aggrigate.brand)
+
+
+
+        const totalProducts = brands.reduce((total, each) => each.count + total, 0)
+        const totalPages = Math.ceil(totalProducts / row)
+        // console.log(totalProducts)
 
 
 
