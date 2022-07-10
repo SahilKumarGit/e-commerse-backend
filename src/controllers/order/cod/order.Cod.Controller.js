@@ -68,7 +68,7 @@ const orderCod = async (req, res) => {
             userId: data._id,
             status: 'PENDING',
             statusHistory: [{
-                title: "at seller",
+                title: "Not yet dispatched, Request Received by seller",
                 date: date
             }],
             items: items,
@@ -76,7 +76,8 @@ const orderCod = async (req, res) => {
             payment: {
                 by: 'COD',
                 status: 'UNPAID'
-            }
+            },
+            address: data.address
         }
 
 
@@ -88,7 +89,7 @@ const orderCod = async (req, res) => {
 
 
         //Document creatation in db 
-        await orderModel.create(obj)
+        const orderCreated = await orderModel.create(obj)
 
         // make the cart empty
         cartData.items = []
@@ -97,7 +98,7 @@ const orderCod = async (req, res) => {
         // Update the product Quantity
         await productModel.bulkWrite(bulkUpdateArr)
 
-        return success(res, 201, true, 'Order created successfully', {})
+        return success(res, 201, true, 'Your order placed successfully!', { orderId: orderCreated._id })
 
     }
     catch (e) {

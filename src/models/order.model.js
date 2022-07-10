@@ -94,10 +94,56 @@ const cartSchema = new mongoose.Schema({
             enum: ["3XS", "XXS", "XS", "XS/S", "S", "M", "L", "XL", "XL/XXL", "XXL", "3XL", "4XL", "5XL", "6XL", "7XL", "8XL", "9XL", "10XL", "11XL", "ONESIZE"]
         }
     }],
+    address: {
+        billing: {
+            address: {
+                type: String,
+                trim: true,
+                required: true
+            },
+            city: {
+                type: String,
+                trim: true,
+                required: true
+            },
+            state: {
+                type: String,
+                trim: true,
+                required: true
+            },
+            pincode: {
+                type: Number,
+                trim: true,
+                required: true
+            },
+        },
+        shipping: {
+            address: {
+                type: String,
+                trim: true,
+                required: true
+            },
+            city: {
+                type: String,
+                trim: true,
+                required: true
+            },
+            state: {
+                type: String,
+                trim: true,
+                required: true
+            },
+            pincode: {
+                type: Number,
+                trim: true,
+                required: true
+            },
+        }
+    },
     status: {
         type: String,
         default: 'PENDING',
-        enum: ["CANCELLED","PENDING","DELIVERED","RETURNED"]
+        enum: ["CANCELLED", "PENDING", "DELIVERED", "RETURNED"]
     },
     statusHistory: [{
         title: String,
