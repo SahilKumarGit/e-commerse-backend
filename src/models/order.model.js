@@ -143,7 +143,7 @@ const cartSchema = new mongoose.Schema({
     status: {
         type: String,
         default: 'PENDING',
-        enum: ["CANCELLED", "PENDING", "DELIVERED", "RETURNED"]
+        enum: ["CANCELLED", "PENDING","CONFORMED","ON_THE_WAY", "DELIVERED", "RETURNED"]
     },
     statusHistory: [{
         title: String,

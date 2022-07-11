@@ -4,6 +4,7 @@ const allSizes = ["3XS", "XXS", "XS", "XS/S", "S", "M", "L", "XL", "XL/XXL", "XX
 const cartModel = require('../../../models/cart.Model');
 const orderModel = require("../../../models/order.model");
 const { default: mongoose } = require("mongoose");
+const orderSmtp = require("../../smtp/order.smtp");
 
 
 
@@ -68,6 +69,9 @@ const orderCod = async (req, res) => {
             userId: data._id,
             status: 'PENDING',
             statusHistory: [{
+                title: "Order Placed",
+                date: date
+            }, {
                 title: "Not yet dispatched, Request Received by seller",
                 date: date
             }],
@@ -97,6 +101,8 @@ const orderCod = async (req, res) => {
 
         // Update the product Quantity
         await productModel.bulkWrite(bulkUpdateArr)
+
+        orderSmtp.orderPlaced(data,orderCreated._id,obj.price.total)
 
         return success(res, 201, true, 'Your order placed successfully!', { orderId: orderCreated._id })
 
