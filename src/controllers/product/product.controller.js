@@ -260,7 +260,7 @@ const viewAll = async (req, res) => {
         // console.log(query)
         // default Query
         const queryObj = {}
-        const sortObj = { createdAt: -1 }
+        const sortObj = { title: 1 }  //{ createdAt: -1 }
 
         let page = 1
         let row = 25

@@ -8,6 +8,8 @@ const orderByCod = require('../controllers/order/cod/order.Cod.Controller')
 const orders = require('../controllers/order/orderList.controller')
 const { authentication, authrization } = require('../middleware/public/auth.middleware')
 const { createPaymentEnv } = require('../controllers/order/using_paytm/initializePayment.controller')
+const exploreList = require('./../controllers/explore/getListed.controller')
+
 const router = express.Router()
 
 
@@ -57,6 +59,11 @@ router.post('/order/byCod', authentication, authrization, orderByCod.orderCod)
 
 // order apy paytm
 router.post('/paytm/init', authentication, authrization, createPaymentEnv)
+
+
+
+// explore api here
+router.get('/explore', exploreList)
 
 
 
