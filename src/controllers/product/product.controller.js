@@ -259,8 +259,8 @@ const viewAll = async (req, res) => {
         const query = req.query
         // console.log(query)
         // default Query
-        const queryObj = {}
-        const sortObj = { title: 1 }  //{ createdAt: -1 }
+        let queryObj = {}
+        let sortObj = { 'title': 1 }  //{ createdAt: -1 }
 
         let page = 1
         let row = 25
@@ -285,8 +285,9 @@ const viewAll = async (req, res) => {
             }
 
             if (query.discount) queryObj["price.discount"] = { $gte: query.discount }
+
             if (!emptyString(query.sortBy) && !emptyString(query.inOrder)) {
-                delete sortObj.createdAt // it use to delete previous key:value in sort
+                sortObj = {} // it use to delete previous key:value in sort
                 sortObj[query.sortBy] = Number(query.inOrder)
             }
         }
