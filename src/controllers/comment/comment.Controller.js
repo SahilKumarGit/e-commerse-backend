@@ -3,6 +3,10 @@ const { emptyObject, emptyString, emptyNumber, invalidObjectId, isValidRequestBo
 const { unSuccess, success } = require("../../utility/response");
 const productModel = require('./../../models/product.model');
 const { isLogined } = require('../../utility/isLogined');
+const orderModel = require('../../models/order.model')
+
+
+
 
 
 const create = async (req, res) => {
@@ -20,16 +24,42 @@ const create = async (req, res) => {
         if (emptyString(message)) return unSuccess(res, 400, true, 'comment is required!')
         // if (!message.match(/^[a-zA-Z0-9\s]+$/)) return unSuccess(res, 400, true, 'comment is not valid!')
 
+        // Check eligibility.
+        const eligible = await checkAccessToGiveFeedBack(userId, productId)
+        if (!eligible) return unSuccess(res, 400, true, 'You are not eligible to give feedback on this product!')
         // product verify
         let product = await productModel.findOne({ _id: productId, isDeleted: false })
         if (!product) return unSuccess(res, 404, true, 'product not found enter valid product Id!')
 
-        let comment = await commentModel.findOne({ userId: userId, isDeleted: false })
+        let comment = await commentModel.findOne({ productId: productId, userId: userId, isDeleted: false })
         if (comment) return unSuccess(res, 400, true, 'comment already exists!')
 
         //create comment 
         let result = await commentModel.create(data)
         return success(res, 201, true, "comment created", result)
+
+    } catch (e) {
+        console.log(e)
+        return unSuccess(res, 500, true, e.message)
+    }
+}
+
+
+const eligible = async (req, res) => {
+    try {
+        let data = req.body
+        let Id = req.tokenData.userId
+        data.userId = Id
+        let { userId, productId } = data
+
+        if (invalidObjectId(userId)) return unSuccess(res, 400, true, 'enter valid userId!')
+        if (emptyString(userId)) return unSuccess(res, 400, true, 'userId is required!')
+        if (invalidObjectId(productId)) return unSuccess(res, 400, true, 'enter valid productId!')
+
+        // Check eligibility.
+        const eligible = await checkAccessToGiveFeedBack(userId, productId)
+        if (!eligible) return unSuccess(res, 400, true, 'You are not eligible to give feedback on this product!')
+        return success(res, 200, true, "You are eligible", {})
 
     } catch (e) {
         console.log(e)
@@ -148,7 +178,19 @@ const deletecomment = async (req, res) => {
     }
 }
 
+
+const checkAccessToGiveFeedBack = async (userId, productId) => {
+    try {
+        const inOrder = await orderModel.findOne({ userId: userId, 'items.product': productId })
+        if (inOrder) return true
+        return false
+    } catch (e) {
+        return false
+    }
+}
+
 module.exports = {
+    eligible,
     create,
     view,
     update,

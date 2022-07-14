@@ -7,8 +7,10 @@ const wishList = require('../controllers/wishList/wishList.Controller')
 const orderByCod = require('../controllers/order/cod/order.Cod.Controller')
 const orders = require('../controllers/order/orderList.controller')
 const { authentication, authrization } = require('../middleware/public/auth.middleware')
-const { createPaymentEnv } = require('../controllers/order/using_paytm/initializePayment.controller')
 const exploreList = require('./../controllers/explore/getListed.controller')
+const { createPayment } = require('../controllers/order/using_paytm/paytmPG.paytm')
+const { callbackPayment } = require('../controllers/order/using_paytm/response.paytm')
+const { viewStatus } = require('../controllers/order/using_paytm/viewTxnStatus.paytm')
 
 const router = express.Router()
 
@@ -30,6 +32,7 @@ router.get('/verify/:key', user.verifyEmail)
 
 // comment API routers
 router.post('/comment/create', authentication, authrization, comment.create)
+router.post('/comment/eligible', authentication, authrization, comment.eligible)
 router.get('/comment/:productId', comment.view)
 router.put('/comment/update', authentication, authrization, comment.update)
 router.delete('/comment/delete', authentication, authrization, comment.deletecomment)
@@ -58,7 +61,9 @@ router.get('/order/:orderId', authentication, authrization, orders.orderData)
 router.post('/order/byCod', authentication, authrization, orderByCod.orderCod)
 
 // order apy paytm
-router.post('/paytm/init', authentication, authrization, createPaymentEnv)
+router.post('/paytm/init', authentication, authrization, createPayment)
+router.post('/paytm/status', authentication, authrization, viewStatus)
+router.post('/paytm/callback', callbackPayment)
 
 
 

@@ -1,15 +1,18 @@
 const { unSuccess, success } = require("../../../utility/response");
 const productModel = require("../../../models/product.model");
-const allSizes = ["3XS", "XXS", "XS", "XS/S", "S", "M", "L", "XL", "XL/XXL", "XXL", "3XL", "4XL", "5XL", "6XL", "7XL", "8XL", "9XL", "10XL", "11XL", "ONESIZE"]
 const cartModel = require('../../../models/cart.Model');
 const orderModel = require("../../../models/order.model");
 const { default: mongoose } = require("mongoose");
-const orderSmtp = require("../../smtp/order.smtp");
+const { orderplacedmail } = require("../../../smtp_templates/orderplaced.smtp")
+const { emptyString } = require("../../../utility/validations");
 
 
 
 const orderCod = async (req, res) => {
     try {
+        const frontendCallBack = req.body.callback
+        if (emptyString(frontendCallBack)) return unSuccess(res, 400, true, 'callback is required!')
+
         let date = new Date()
         let data = req.user
         let cartData = await cartModel.findOne({ userId: data._id }).populate("items.product", { 'price': 1, 'size_and_inventory': 1 })
@@ -102,7 +105,8 @@ const orderCod = async (req, res) => {
         // Update the product Quantity
         await productModel.bulkWrite(bulkUpdateArr)
 
-        orderSmtp.orderPlaced(data,orderCreated._id,obj.price.total)
+        // order placed email send from here
+        orderplacedmail(data.firstName,data.email,obj.price.total,`${frontendCallBack}/my/orders/${orderCreated._id}`)
 
         return success(res, 201, true, 'Your order placed successfully!', { orderId: orderCreated._id })
 

@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon src/index.js",
-    "gitpush":"git add . && git commit -m \"command from node!\" && git push https://github.com/SahilKumarGit/e-commerse-backend.git",
-    "gitpull":" git pull https://github.com/SahilKumarGit/e-commerse-backend.git"
+    "gitpush": "git add . && git commit -m \"command from node!\" && git push https://github.com/SahilKumarGit/e-commerse-backend.git",
+    "gitpull": " git pull https://github.com/SahilKumarGit/e-commerse-backend.git"
   },
   "repository": {
     "type": "git",
@@ -29,6 +29,7 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.7.5",
     "nodemon": "^2.0.16",
+    "paytmchecksum": "^1.5.0",
     "redis": "^4.1.0",
     "short-uuid": "^4.2.0"
   }

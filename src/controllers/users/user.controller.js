@@ -10,6 +10,7 @@ const { secretkey } = require("../../environment/config.env");
 const userModel = require("../../models/user.model");
 const cartModel = require("../../models/cart.Model");
 const wishList = require("../../models/wishlist.Model");
+const { emailverify } = require("../../smtp_templates/emailverify.smtp");
 
 
 const saltRounds = 10;
@@ -130,15 +131,7 @@ const login = async (req, res) => {
 
             // generate url for verify email http://localhost:3000/public/verify/vfy-sdfg-ds34
             let vfyUrl = `${req.protocol}://${req.headers.host}/public/verify/${emailVfyId}`
-            let html = `
-                <p>Hello ${user.firstName},</p>
-                <p>Before login you need to verify your email first, Please click the button to verify your account (Link is valid for 10 minuts).</p>
-                <a href="${vfyUrl}" target="_blank">Verify Email Address</a>
-            `;
-
-            // send email here
-            await sendMail("Email Verification - No Reply", user.email, "Email Verification", html);
-
+            emailverify(user.firstName, user.email, vfyUrl)
             return unSuccess(res, 403, false, "Email not verified, We send you an email to verify your account!")
         }
 
@@ -195,6 +188,8 @@ const verifyEmail = async (req, res) => {
         //update user document
         await userModel.findByIdAndUpdate(value, { emailVerified: true })
 
+        // delete key from radis
+        await client.del(key)
         return res.send(template.replace('{{message}}', "🎉 Email address Verified!"))
 
     } catch (e) {
@@ -408,7 +403,7 @@ const forgetPassword = async (req, res) => {
         // generate key for vfy and store it in redis
         let resetUID = 'forget-' + short.generate() + '-' + new Date().getTime();
         await client.setEx(resetUID, 600, user._id.toString());  // 600 sec or 10 min
-        console.log(resetUID)
+        // console.log(resetUID)
 
         // generate url for verify email http://localhost:3000/public/verify/vfy-sdfg-ds34
         let vfyUrl = `${callback}?i=${resetUID}`
@@ -450,8 +445,10 @@ const resetPassword = async (req, res) => {
         const encryptedPassword = await bcrypt.hash(password2, saltRounds)
 
         let userdata = await userModel.findOneAndUpdate({ _id: value, isDeleted: false }, { $set: { password: encryptedPassword } })
-        if (!userdata)
-            return unSuccess(res, 404, false, "User not found or their has been some mistake try again later")
+        if (!userdata) return unSuccess(res, 404, false, "User not found or their has been some mistake try again later")
+
+        // remove redis key and data cause no need it in future
+        await client.del(key)
 
         return success(res, 200, false, 'Password updated', {})
 
