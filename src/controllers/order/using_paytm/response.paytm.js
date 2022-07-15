@@ -14,6 +14,7 @@ const { paytmEnv } = require("../../../environment/config.env");
 const checksum_lib = require('paytmchecksum');
 const orderModel = require("../../../models/order.model");
 const { orderplacedmail } = require("../../../smtp_templates/orderplaced.smtp")
+const { transactionstatus } = require("../../../smtp_templates/transactionstatus.smtp")
 
 
 const callbackPayment = async (req, res) => {
@@ -55,6 +56,9 @@ const callbackPayment = async (req, res) => {
 
         // console.log(payObj)
         const createPayment = await transactionModel.create(payObj)
+
+        // send transaction alert in mail SMTP HERE - 
+        transactionstatus(DATA.user.firstName, DATA.user.email, `${DATA.callback}/payment/${fields.TXNID}`, fields.TXNAMOUNT, fields.STATUS, fields.RESPMSG)
 
 
 

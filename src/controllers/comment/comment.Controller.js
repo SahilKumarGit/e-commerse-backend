@@ -32,7 +32,13 @@ const create = async (req, res) => {
         if (!product) return unSuccess(res, 404, true, 'product not found enter valid product Id!')
 
         let comment = await commentModel.findOne({ productId: productId, userId: userId, isDeleted: false })
-        if (comment) return unSuccess(res, 400, true, 'comment already exists!')
+        if (comment) {
+            // if the comment already exist then update here....
+            comment.message = message
+            comment.rating = rating
+            await comment.save()
+            return success(res, 201, true, "comment updated", comment)
+        }
 
         //create comment 
         let result = await commentModel.create(data)
@@ -59,7 +65,10 @@ const eligible = async (req, res) => {
         // Check eligibility.
         const eligible = await checkAccessToGiveFeedBack(userId, productId)
         if (!eligible) return unSuccess(res, 400, true, 'You are not eligible to give feedback on this product!')
-        return success(res, 200, true, "You are eligible", {})
+
+        // check if comment already exist
+        const comment = await commentModel.findOne({ productId: productId, userId: userId, isDeleted: false })
+        return success(res, 200, true, "You are eligible", { comment: comment })
 
     } catch (e) {
         console.log(e)
@@ -156,18 +165,15 @@ const update = async (req, res) => {
 const deletecomment = async (req, res) => {
     try {
         let data = req.body
-        let Id = req.tokenData.userId
-        data.userId = Id
-        let { userId, productId } = data
-        if (invalidObjectId(userId)) return unSuccess(res, 400, true, 'enter valid userId!')
-        if (invalidObjectId(productId)) return unSuccess(res, 400, true, 'enter valid productId!')
+        let userId = req.tokenData.userId
+
+        let { commentId } = data
+        if (invalidObjectId(commentId)) return unSuccess(res, 400, true, 'enter valid commentId!')
+
         // db calls 
-        let product = await productModel.findOne({ _id: productId, isDeleted: false })
-        if (!product) return unSuccess(res, 404, true, 'product not found')
-        // comment verify
-        let comment = await commentModel.findOne({ userId: userId, isDeleted: false })
+        let comment = await commentModel.findOne({ userId: userId, _id: commentId, isDeleted: false })
         if (!comment) return unSuccess(res, 404, true, 'comment not found')
-        if (comment.userId.toString() !== userId) return unSuccess(res, 403, true, 'unauthorised!')
+
         comment.isDeleted = true
         comment.deletedAt = new Date()
 

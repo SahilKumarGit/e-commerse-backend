@@ -11,6 +11,7 @@ const userModel = require("../../models/user.model");
 const cartModel = require("../../models/cart.Model");
 const wishList = require("../../models/wishlist.Model");
 const { emailverify } = require("../../smtp_templates/emailverify.smtp");
+const { resetpasswordrequest } = require("../../smtp_templates/resetpassword.smtp");
 
 
 const saltRounds = 10;
@@ -407,15 +408,8 @@ const forgetPassword = async (req, res) => {
 
         // generate url for verify email http://localhost:3000/public/verify/vfy-sdfg-ds34
         let vfyUrl = `${callback}?i=${resetUID}`
-        let html = `
-             <p>Hello ${user.firstName},</p>
-             <p>We receive a request to reset the password for your account.</p>
-             <p>To reset your password click the link given bellow.</p>
-             <a href="${vfyUrl}" target="_blank">Reset Password</a>
-         `;
-
-        // send email here
-        await sendMail("Reset Password - No Reply", user.email, "Reset Password", html);
+        // send email here for reset request
+        await resetpasswordrequest(user.firstName, user.email, vfyUrl)
         return success(res, 200, false, 'Reset request send to your email address!', {})
 
     } catch (e) {
